@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V15 - Графиктай</title>
+    <title>Диспетчерийн бүртгэл V18 - Full 24H</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
         body { font-family: 'Manrope', sans-serif; }
-        .editing-row { background-color: #fef9c3 !important; }
-        label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
-        
-        /* Modal Стиль */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; padding: 20px; overflow-y: auto; }
         .modal-content { background: white; width: 100%; max-width: 1200px; border-radius: 24px; padding: 30px; margin: 20px auto; }
-        
-        /* Хүснэгтийн стиль */
         .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; }
         .branch-cell { background-color: #fef08a; font-weight: 800; }
+        label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        input[type="datetime-local"] { font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body class="bg-slate-100 p-3 md:p-6 text-slate-800">
@@ -41,82 +37,44 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-blue-600 uppercase mb-4 border-b pb-1">1. Салбар нэгж</h3>
-                <div class="space-y-3">
-                    <div><label>Үндсэн ангилал</label><select id="category" onchange="updateBranches()" class="w-full p-2 rounded-lg border font-bold bg-slate-50 text-sm"></select></div>
-                    <div><label>Салбар хэсэг</label><select id="branch" class="w-full p-2 rounded-lg border font-bold text-blue-800 text-sm"></select></div>
-                    <div><label>Тоноглол</label><input type="text" id="equipName" placeholder="Жишээ: Ш-452" class="w-full p-2 rounded-lg border font-bold text-sm"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div><label>Үндсэн ангилал</label><select id="category" onchange="updateBranches()" class="w-full p-2 rounded-lg border font-bold bg-slate-50 text-sm"></select></div>
+            <div><label>Салбар хэсэг</label><select id="branch" class="w-full p-2 rounded-lg border font-bold text-blue-800 text-sm"></select></div>
+            <div><label>Тоноглол</label><input type="text" id="equipName" placeholder="Жишээ: Ш-452" class="w-full p-2 rounded-lg border font-bold text-sm"></div>
+            <div><label>Эгшний кВ / А</label>
+                <div class="flex gap-1"><input type="number" id="momentVolt" placeholder="кВ" class="w-1/2 p-2 rounded-lg border font-bold text-sm"><input type="number" id="momentCurrent" placeholder="А" class="w-1/2 p-2 rounded-lg border font-bold text-sm"></div>
+            </div>
+            <div><label>Тасарсан / Залгасан (24H)</label>
+                <div class="flex flex-col gap-1">
+                    <input type="datetime-local" id="startTime" step="60" class="p-1 rounded border font-bold text-[11px]">
+                    <input type="datetime-local" id="endTime" step="60" class="p-1 rounded border font-bold text-[11px]">
                 </div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-purple-600 uppercase mb-4 border-b pb-1">2. Техник үзүүлэлт</h3>
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div><label>Хүчдэл /кВ/</label><select id="voltageBase" class="w-full p-2 rounded-lg border font-bold text-sm"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select></div>
-                        <div><label>Цэгийн тоо</label><input type="number" id="pointCount" value="1" class="w-full p-2 rounded-lg border text-center font-bold text-sm"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div><label class="text-blue-600">Эгшний кВ</label><input type="number" id="momentVolt" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm"></div>
-                        <div><label class="text-blue-600">Эгшний А</label><input type="number" id="momentCurrent" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm"></div>
-                    </div>
-                    <div><label>cosφ</label><input type="number" id="cosphi" value="0.9" step="0.01" class="w-full p-2 rounded-lg border text-center font-black text-sm"></div>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-orange-600 uppercase mb-4 border-b pb-1">3. Огноо & Цаг агаар</h3>
-                <div class="space-y-3">
-                    <div><label class="text-red-500">Тасарсан</label><input type="datetime-local" id="startTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]"></div>
-                    <div><label class="text-green-600">Залгасан</label><input type="datetime-local" id="endTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]"></div>
-                    <div><label>Цаг агаар</label><select id="weather" class="w-full p-2 rounded-lg border font-bold bg-blue-50/50 text-sm">
-                        <option value="Тогтуун">Тогтуун</option><option value="Цастай">Цастай</option><option value="Бороотой">Бороотой</option><option value="Шуургатай">Шуургатай</option><option value="Дуу цахилгаантай">Дуу цахилгаантай</option><option value="Цасан шуургатай">Цасан шуургатай</option>
-                    </select></div>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-red-600 uppercase mb-4 border-b pb-1">4. Гэмтэл & Хамгаалалт</h3>
-                <div class="space-y-3">
-                    <div><label>Хамгаалалт</label><select id="protection" class="w-full p-2 rounded-lg border font-bold text-sm"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option><option>Бусад</option></select></div>
-                    <div><label>Гэмтлийн төрөл</label><select id="fault" class="w-full p-2 rounded-lg border text-red-700 font-bold text-sm">
-                        <option value="Дэд станц">Дэд станц</option><option value="Агаарын шугам">Агаарын шугам</option><option value="Кабель шугам">Кабель шугам</option><option value="Хэт хүчдэл">Хэт хүчдэл</option><option value="Тоноглол">Тоноглол</option><option value="Тодорхойгүй">Тодорхойгүй</option>
-                    </select></div>
-                    <div class="bg-slate-900 p-2 rounded-xl text-center"><label class="text-slate-400 mb-0">Тасарсан хугацаа (цаг)</label><h4 id="liveTime" class="text-white text-xl font-black">0.00</h4></div>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-green-600 uppercase mb-4 border-b pb-1">5. Үйлдэл & Диспетчер</h3>
-                <div class="space-y-3">
-                    <div><label>Арга хэмжээ</label><textarea id="action" rows="1" class="w-full p-2 rounded-lg border text-xs placeholder-slate-300" placeholder="Шийдвэр..."></textarea></div>
-                    <div><label>Диспетчер</label><input type="text" id="dispName" class="w-full p-2 rounded-lg border font-black uppercase text-[10px]"></div>
-                    <div class="pt-2">
-                        <button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg active:scale-95 transition-all">Хадгалах</button>
-                        <button id="cancelBtn" onclick="resetForm()" class="hidden w-full bg-slate-400 text-white py-2 rounded-lg text-[9px] font-bold mt-2">Цуцлах</button>
-                    </div>
-                </div>
-            </div>
+            <div><label>Цаг агаар</label><select id="weather" class="w-full p-2 rounded-lg border font-bold text-sm bg-blue-50/30">
+                <option>Тогтуун</option><option>Цастай</option><option>Бороотой</option><option>Шуургатай</option><option>Дуу цахилгаантай</option><option>Цасан шуургатай</option>
+            </select></div>
+            <div><label>Гэмтлийн төрөл</label><select id="fault" class="w-full p-2 rounded-lg border font-bold text-sm bg-red-50/30 text-red-700">
+                <option>Дэд станц</option><option>Агаарын шугам</option><option>Кабель шугам</option><option>Хэт хүчдэл</option><option>Тоноглол</option><option>Тодорхойгүй</option>
+            </select></div>
+            <div><label>Диспетчер</label><input type="text" id="dispName" class="w-full p-2 rounded-lg border font-black uppercase text-xs"></div>
+            <div class="lg:col-span-2 flex items-end"><button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg transition-all active:scale-95">Хадгалах</button></div>
         </div>
 
         <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden mb-10">
-            <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-center gap-4">
-                <input type="text" id="search" oninput="filterTable()" placeholder="Салбар, тоноглол эсвэл гэмтлээр хайх..." class="p-3 px-6 rounded-full border text-sm w-full md:w-96 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="clearAllData()" class="text-red-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-widest">Өгөгдлийг бүрэн устгах</button>
-            </div>
-            <div class="overflow-x-auto max-h-[600px]">
+            <div class="overflow-x-auto">
                 <table class="min-w-full text-[10.5px] border-collapse">
-                    <thead class="bg-slate-900 text-white sticky top-0 z-20 uppercase font-bold text-center">
+                    <thead class="bg-slate-900 text-white font-bold text-center">
                         <tr>
                             <th class="p-4 border border-slate-800">№</th>
                             <th class="p-4 border border-slate-800 text-left">Салбар</th>
                             <th class="p-4 border border-slate-800 text-left">Тоноглол</th>
                             <th class="p-4 border border-slate-800">кВ / А</th>
-                            <th class="p-4 border border-slate-800 text-red-400">Тасарсан</th>
-                            <th class="p-4 border border-slate-800 text-green-400">Залгасан</th>
+                            <th class="p-4 border border-slate-800">Тасарсан (24H)</th>
+                            <th class="p-4 border border-slate-800">Залгасан (24H)</th>
                             <th class="p-4 border border-slate-800">Цаг</th>
-                            <th class="p-4 border border-slate-800 bg-red-800/50">ДТЦЭХ</th>
+                            <th class="p-4 border border-slate-800 bg-red-900/50">ДТЦЭХ</th>
                             <th class="p-4 border border-slate-800">Гэмтэл</th>
-                            <th class="p-4 border border-slate-800">Диспетчер</th>
-                            <th class="p-4 border border-slate-800 w-24">Үйлдэл</th>
+                            <th class="p-4 border border-slate-800 w-20">Үйлдэл</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="text-center font-bold divide-y text-slate-700"></tbody>
@@ -131,109 +89,131 @@
                 <h2 class="text-2xl font-black uppercase text-slate-800 italic">Аваарийн тасралтын мэдээний тайлан</h2>
                 <button onclick="closeModal('reportModal')" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold uppercase text-xs">Хаах</button>
             </div>
-            <table class="w-full report-table text-sm border-collapse">
-                <thead>
-                    <tr class="bg-slate-100 uppercase text-[11px] font-black">
-                        <th class="w-12">№</th>
-                        <th class="text-left px-6">Төрөл</th>
-                        <th>Хэмжих нэгж</th>
-                        <th>Салбар хэсэг</th>
-                        <th class="w-40">Үзүүлэлт</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody"></tbody>
-            </table>
+            <table class="w-full report-table text-xs border-collapse"><tbody id="reportTableBody"></tbody></table>
         </div>
     </div>
 
     <div id="chartModal" class="modal-overlay">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-8 border-b pb-4">
-                <h2 class="text-2xl font-black uppercase text-slate-800 italic">Статистик Графикууд</h2>
+                <h2 class="text-2xl font-black uppercase text-slate-800 italic">Статистик Шинжилгээ</h2>
                 <button onclick="closeModal('chartModal')" class="bg-indigo-900 text-white px-6 py-2 rounded-xl font-bold uppercase text-xs">Хаах</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-slate-50 p-6 rounded-2xl border">
-                    <h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Тасралтын ангилал /нэгж тус бүрээр/</h3>
-                    <div class="h-80"><canvas id="pieBranch"></canvas></div>
-                </div>
-                <div class="bg-slate-50 p-6 rounded-2xl border">
-                    <h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Тасралтын ангилал /гэмтлээр/</h3>
-                    <div class="h-80"><canvas id="pieFault"></canvas></div>
-                </div>
-                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border">
-                    <h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Салбар нэгжийн гэмтлийн төрөл</h3>
-                    <div class="h-96"><canvas id="barFaultBranch"></canvas></div>
-                </div>
+                <div class="bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Салбараар (Pie)</h3><div class="h-64"><canvas id="pieBranch"></canvas></div></div>
+                <div class="bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Гэмтлээр (Pie)</h3><div class="h-64"><canvas id="pieFault"></canvas></div></div>
+                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Гэмтлийн төрөл салбараар</h3><div class="h-80"><canvas id="barFaultBranch"></canvas></div></div>
+                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Цаг агаар салбараар</h3><div class="h-80"><canvas id="barWeatherBranch"></canvas></div></div>
             </div>
         </div>
     </div>
 
     <script>
-        const branches = {
-            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ"],
-            "Бусад ТЗЭ": ["ДТЗЭ", "ҮТЗЭ", "ТТЗЭ", "Бусад"],
-            "Хэрэглэгч": ["Уул уурхай", "ААН", "Хувь хүн", "Үйлдвэр"]
+        const branches = { 
+            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ"], 
+            "Бусад": ["ДТЗЭ", "ҮТЗЭ", "ТТЗЭ", "Бусад"] 
         };
-
         let db = JSON.parse(localStorage.getItem('DSEDN_DATA')) || [];
-        let editId = null;
         let chartInstances = {};
 
         function updateBranches() {
             const cat = document.getElementById('category').value;
             const bSel = document.getElementById('branch');
             bSel.innerHTML = "";
-            branches[cat].forEach(n => {
-                const o = document.createElement('option'); o.value = n; o.textContent = n; bSel.appendChild(o);
-            });
+            (branches[cat] || []).forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; bSel.appendChild(o); });
         }
 
-        function updateLiveTime() {
-            const s = new Date(document.getElementById('startTime').value);
-            const e = new Date(document.getElementById('endTime').value);
-            const diff = (e - s) / (1000 * 60 * 60);
-            document.getElementById('liveTime').textContent = (isNaN(diff) || diff < 0) ? "0.00" : diff.toFixed(2);
+        function format24h(dtStr) {
+            if(!dtStr) return "---";
+            const d = new Date(dtStr);
+            return d.toLocaleDateString('mn-MN', {year:'numeric', month:'2-digit', day:'2-digit'}) + " " + 
+                   d.toLocaleTimeString('mn-MN', {hour12:false, hour:'2-digit', minute:'2-digit'});
         }
 
         function saveEntry() {
             const s = document.getElementById('startTime').value;
             const e = document.getElementById('endTime').value;
-            if(!s || !e) return alert("Огноо оруулна уу!");
-            
-            const diff = (new Date(e) - new Date(s)) / (1000 * 60 * 60);
-            const kv = parseFloat(document.getElementById('momentVolt').value) || 0;
-            const amp = parseFloat(document.getElementById('momentCurrent').value) || 0;
-            const cos = parseFloat(document.getElementById('cosphi').value) || 0.9;
-            const dteh = (1.732 * kv * amp * cos * diff).toFixed(1);
+            if(!s || !e) return alert("Огноог бүрэн оруулна уу!");
 
-            const rowData = {
-                id: editId || Date.now(),
+            const diff = (new Date(e) - new Date(s)) / (1000 * 3600);
+            const dteh = (1.732 * (parseFloat(document.getElementById('momentVolt').value)||0) * (parseFloat(document.getElementById('momentCurrent').value)||0) * 0.9 * diff).toFixed(1);
+
+            const data = {
+                id: Date.now(),
                 category: document.getElementById('category').value,
                 branch: document.getElementById('branch').value,
                 equip: document.getElementById('equipName').value || "---",
-                vBase: document.getElementById('voltageBase').value,
-                point: document.getElementById('pointCount').value,
-                vMom: kv, a: amp, cos: cos, start: s, end: e, hrs: diff.toFixed(2), dteh: dteh,
-                prot: document.getElementById('protection').value,
-                weather: document.getElementById('weather').value,
+                vMom: document.getElementById('momentVolt').value || 0,
+                amp: document.getElementById('momentCurrent').value || 0,
+                start: s, end: e, hrs: diff.toFixed(2), dteh: dteh,
                 fault: document.getElementById('fault').value,
-                disp: document.getElementById('dispName').value || "---",
-                action: document.getElementById('action').value
+                weather: document.getElementById('weather').value,
+                disp: document.getElementById('dispName').value || "---"
             };
 
-            if (editId) {
-                const idx = db.findIndex(r => r.id === editId); db[idx] = rowData;
-            } else { db.push(rowData); }
-
+            db.push(data);
             localStorage.setItem('DSEDN_DATA', JSON.stringify(db));
-            resetForm(); render();
+            render();
+        }
+
+        function render() {
+            const body = document.getElementById('tableBody'); body.innerHTML = "";
+            let total = 0;
+            db.forEach((r, i) => {
+                total += parseFloat(r.dteh);
+                body.innerHTML += `<tr class="hover:bg-slate-50">
+                    <td class="p-3 border">${i+1}</td>
+                    <td class="p-3 border text-left text-blue-900">${r.branch}</td>
+                    <td class="p-3 border text-left">${r.equip}</td>
+                    <td class="p-3 border text-blue-600">${r.vMom} / ${r.amp}</td>
+                    <td class="p-3 border font-mono text-red-600 text-[9.5px]">${format24h(r.start)}</td>
+                    <td class="p-3 border font-mono text-green-600 text-[9.5px]">${format24h(r.end)}</td>
+                    <td class="p-3 border">${r.hrs}</td>
+                    <td class="p-3 border text-red-700 bg-red-50 italic">${r.dteh}</td>
+                    <td class="p-3 border">${r.fault}</td>
+                    <td class="p-3 border"><button onclick="deleteRow(${r.id})" class="text-red-400">Устгах</button></td></tr>`;
+            });
+            document.getElementById('totalDTEH').innerText = total.toFixed(1);
+        }
+
+        function openCharts() {
+            if (db.length === 0) return alert("Дата алга!");
+            document.getElementById('chartModal').style.display = 'block';
+            const bCounts = {}, fCounts = {}, bFaults = {}, bWeather = {};
+            const faultTypes = [...new Set(db.map(i => i.fault))];
+            const weatherTypes = [...new Set(db.map(i => i.weather))];
+
+            db.forEach(item => {
+                bCounts[item.branch] = (bCounts[item.branch] || 0) + 1;
+                fCounts[item.fault] = (fCounts[item.fault] || 0) + 1;
+                if(!bFaults[item.branch]) bFaults[item.branch] = {};
+                bFaults[item.branch][item.fault] = (bFaults[item.branch][item.fault] || 0) + 1;
+                if(!bWeather[item.branch]) bWeather[item.branch] = {};
+                bWeather[item.branch][item.weather] = (bWeather[item.branch][item.weather] || 0) + 1;
+            });
+
+            const labels = Object.keys(bCounts);
+            drawChart('pieBranch', 'pie', labels, Object.values(bCounts), ['#3b82f6','#f97316','#fbbf24','#84cc16','#a855f7','#06b6d4']);
+            drawChart('pieFault', 'pie', Object.keys(fCounts), Object.values(fCounts), ['#ef4444','#f59e0b','#10b981','#6366f1','#8b5cf6']);
+            
+            const fDs = faultTypes.map((f, i) => ({ label: f, data: labels.map(b => bFaults[b][f] || 0), backgroundColor: ['#3b82f6','#f97316','#94a3b8','#fbbf24','#60a5fa','#4ade80'][i%6] }));
+            drawChart('barFaultBranch', 'bar', labels, fDs, null, true);
+
+            const wDs = weatherTypes.map((w, i) => ({ label: w, data: labels.map(b => bWeather[b][w] || 0), backgroundColor: ['#1e40af','#ea580c','#94a3b8','#ca8a04','#0ea5e9','#16a34a'][i%6] }));
+            drawChart('barWeatherBranch', 'bar', labels, wDs, null, true);
+        }
+
+        function drawChart(id, type, labels, data, colors, isGroup = false) {
+            if(chartInstances[id]) chartInstances[id].destroy();
+            chartInstances[id] = new Chart(document.getElementById(id), {
+                type: type,
+                data: { labels: labels, datasets: isGroup ? data : [{ data: data, backgroundColor: colors }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } } } } }
+            });
         }
 
         function openReport() {
-            if (db.length === 0) return alert("Өгөгдөл хоосон байна!");
-            const body = document.getElementById('reportTableBody');
-            body.innerHTML = "";
+            const body = document.getElementById('reportTableBody'); body.innerHTML = "";
             const groups = {};
             db.forEach(item => {
                 if (!groups[item.branch]) groups[item.branch] = { count: 0, hrs: 0, dteh: 0 };
@@ -241,173 +221,28 @@
                 groups[item.branch].hrs += parseFloat(item.hrs);
                 groups[item.branch].dteh += parseFloat(item.dteh);
             });
-
             let i = 1;
-            let sumC = 0, sumH = 0, sumD = 0;
             for (const b in groups) {
                 const d = groups[b];
-                const avgH = (d.hrs / d.count).toFixed(2);
-                sumC += d.count; sumH += d.hrs; sumD += d.dteh;
-                body.innerHTML += `
-                    <tr>
-                        <td rowspan="3" class="font-bold text-slate-400 bg-slate-50">${i}</td>
-                        <td class="text-left px-6">Тасралтын тоо</td><td>тоо</td>
-                        <td rowspan="3" class="branch-cell border-l-2 border-slate-300">${b}</td>
-                        <td class="font-black">${d.count}</td>
-                    </tr>
-                    <tr class="bg-slate-50/50">
-                        <td class="text-left px-6 text-slate-500">тасралтын дундаж хугацаа</td><td>цаг</td>
-                        <td class="font-bold text-orange-600">${avgH}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-left px-6 text-slate-500 italic text-[11px]">Дутуу түгээсэн цахилгаан эрчим хүч</td><td>кВт.ц</td>
-                        <td class="font-black text-red-600">${d.dteh.toFixed(1)}</td>
-                    </tr>`;
+                body.innerHTML += `<tr><td rowspan="3" class="font-bold bg-slate-50">${i}</td><td class="text-left px-6">Тасралтын тоо</td><td>тоо</td><td rowspan="3" class="branch-cell border-l-2 border-slate-300">${b}</td><td class="font-black">${d.count}</td></tr>
+                    <tr class="bg-slate-50/50"><td class="text-left px-6 text-slate-500">дундаж хугацаа</td><td>цаг</td><td class="font-bold text-orange-600">${(d.hrs/d.count).toFixed(2)}</td></tr>
+                    <tr><td class="text-left px-6 text-slate-500 italic text-[11px]">ДТЦЭХ</td><td>кВт.ц</td><td class="font-black text-red-600">${d.dteh.toFixed(1)}</td></tr>`;
                 i++;
             }
-            body.innerHTML += `
-                <tr class="bg-slate-900 text-white border-t-4 border-white">
-                    <td rowspan="3" class="font-black text-xl">Σ</td>
-                    <td class="text-left px-6 font-bold uppercase">Нийт тасралтын тоо</td><td>тоо</td>
-                    <td rowspan="3" class="bg-blue-600 font-black text-white text-lg uppercase">ДСЦТС ХК</td>
-                    <td class="font-black text-lg underline">${sumC}</td>
-                </tr>
-                <tr class="bg-slate-800 text-white">
-                    <td class="text-left px-6 font-bold uppercase">дундаж хугацаа</td><td>цаг</td>
-                    <td class="font-black text-lg underline">${(sumH/sumC).toFixed(2)}</td>
-                </tr>
-                <tr class="bg-slate-800 text-white text-yellow-400">
-                    <td class="text-left px-6 font-bold uppercase italic">Нийт ДТЦЭХ</td><td>кВт.ц</td>
-                    <td class="font-black text-2xl underline">${sumD.toFixed(1)}</td>
-                </tr>`;
             document.getElementById('reportModal').style.display = 'block';
         }
 
-        function openCharts() {
-            if (db.length === 0) return alert("График зурах өгөгдөл алга!");
-            document.getElementById('chartModal').style.display = 'block';
-            
-            const branchCounts = {};
-            const faultCounts = {};
-            const branchFaults = {};
-            const faultTypes = [...new Set(db.map(i => i.fault))];
-
-            db.forEach(item => {
-                branchCounts[item.branch] = (branchCounts[item.branch] || 0) + 1;
-                faultCounts[item.fault] = (faultCounts[item.fault] || 0) + 1;
-                if (!branchFaults[item.branch]) branchFaults[item.branch] = {};
-                branchFaults[item.branch][item.fault] = (branchFaults[item.branch][item.fault] || 0) + 1;
-            });
-
-            // Pie Charts
-            renderChart('pieBranch', 'pie', Object.keys(branchCounts), Object.values(branchCounts), ['#3b82f6', '#f97316', '#fbbf24', '#84cc16', '#a855f7', '#06b6d4', '#ec4899']);
-            renderChart('pieFault', 'pie', Object.keys(faultCounts), Object.values(faultCounts), ['#ef4444', '#f59e0b', '#10b981', '#6366f1', '#8b5cf6', '#0ea5e9']);
-
-            // Grouped Bar
-            const branchesInDB = Object.keys(branchFaults);
-            const datasets = faultTypes.map((type, i) => ({
-                label: type,
-                data: branchesInDB.map(b => branchFaults[b][type] || 0),
-                backgroundColor: ['#3b82f6', '#f97316', '#fbbf24', '#84cc16', '#ef4444', '#06b6d4'][i % 6],
-                borderRadius: 4
-            }));
-            renderChart('barFaultBranch', 'bar', branchesInDB, datasets, null, true);
-        }
-
-        function renderChart(id, type, labels, data, colors, isGrouped = false) {
-            if (chartInstances[id]) chartInstances[id].destroy();
-            const ctx = document.getElementById(id).getContext('2d');
-            const config = {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: isGrouped ? data : [{ data: data, backgroundColor: colors }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } }
-                    }
-                }
-            };
-            if(type === 'bar') { config.options.scales = { y: { beginAtZero: true, ticks: { stepSize: 1 } } }; }
-            chartInstances[id] = new Chart(ctx, config);
-        }
-
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        function render() {
-            const body = document.getElementById('tableBody'); body.innerHTML = "";
-            let totalD = 0;
-            db.forEach((r, i) => {
-                totalD += parseFloat(r.dteh);
-                const isEditing = editId === r.id ? "editing-row" : "";
-                body.innerHTML += `
-                    <tr class="${isEditing} hover:bg-slate-50 transition-colors">
-                        <td class="p-3 border border-slate-200">${i+1}</td>
-                        <td class="p-3 border border-slate-200 text-left text-blue-900">${r.branch}</td>
-                        <td class="p-3 border border-slate-200 text-left">${r.equip}</td>
-                        <td class="p-3 border border-slate-200 text-blue-600">${r.vMom} / ${r.a}</td>
-                        <td class="p-3 border border-slate-200 text-red-500 font-mono text-[9px]">${r.start.replace('T', ' ')}</td>
-                        <td class="p-3 border border-slate-200 text-green-600 font-mono text-[9px]">${r.end.replace('T', ' ')}</td>
-                        <td class="p-3 border border-slate-200 text-orange-700">${r.hrs}</td>
-                        <td class="p-3 border border-slate-200 text-red-700 bg-red-50 italic">${r.dteh}</td>
-                        <td class="p-3 border border-slate-200">${r.fault}</td>
-                        <td class="p-3 border border-slate-200 uppercase text-[9px]">${r.disp}</td>
-                        <td class="p-3 border border-slate-200 space-x-2">
-                            <button onclick="editRow(${r.id})" class="text-blue-500 hover:underline">Засах</button>
-                            <button onclick="deleteRow(${r.id})" class="text-red-400 hover:underline">Устгах</button>
-                        </td>
-                    </tr>`;
-            });
-            document.getElementById('totalDTEH').textContent = totalD.toFixed(1);
-        }
-
-        function editRow(id) {
-            editId = id; const d = db.find(r => r.id === id);
-            document.getElementById('category').value = d.category; updateBranches();
-            document.getElementById('branch').value = d.branch;
-            document.getElementById('equipName').value = d.equip;
-            document.getElementById('momentVolt').value = d.vMom;
-            document.getElementById('momentCurrent').value = d.a;
-            document.getElementById('startTime').value = d.start;
-            document.getElementById('endTime').value = d.end;
-            document.getElementById('dispName').value = d.disp;
-            document.getElementById('fault').value = d.fault;
-            document.getElementById('weather').value = d.weather;
-            document.getElementById('saveBtn').innerText = "Шинэчлэх";
-            document.getElementById('cancelBtn').classList.remove('hidden');
-            render();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            editId = null;
-            document.querySelectorAll('input, textarea').forEach(i => { if(!['cosphi', 'pointCount', 'search'].includes(i.id)) i.value = ""; });
-            document.getElementById('saveBtn').innerText = "Хадгалах";
-            document.getElementById('cancelBtn').classList.add('hidden');
-            render();
-        }
-
         function deleteRow(id) { if(confirm("Устгах уу?")) { db = db.filter(r => r.id !== id); localStorage.setItem('DSEDN_DATA', JSON.stringify(db)); render(); } }
-        function clearAllData() { if(confirm("АНХААР: БҮХ ӨГӨГДӨЛ УСТАНА!")) { db = []; localStorage.removeItem('DSEDN_DATA'); render(); } }
-        function filterTable() { const q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll("#tableBody tr").forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none"); }
-        function exportToExcel() { 
-            if(db.length === 0) return alert("Хоосон байна!"); 
-            const ws = XLSX.utils.json_to_sheet(db); 
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, "ТасралтынБүртгэл"); 
-            XLSX.writeFile(wb, `DSEDN_Report_${new Date().toLocaleDateString()}.xlsx`); 
-        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function exportToExcel() { const ws = XLSX.utils.json_to_sheet(db); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, "DSEDN_Report.xlsx"); }
 
         window.onload = () => {
             const cat = document.getElementById('category');
             Object.keys(branches).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; cat.appendChild(o); });
             updateBranches();
             const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
-            const f = n.toISOString().slice(0, 16);
-            document.getElementById('startTime').value = f; document.getElementById('endTime').value = f;
+            const cur = n.toISOString().slice(0, 16);
+            document.getElementById('startTime').value = cur; document.getElementById('endTime').value = cur;
             render();
         }
     </script>
