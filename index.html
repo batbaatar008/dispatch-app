@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диспетчерийн бүртгэл - ДСЦТС ХК</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-6 text-center border-b pb-2">Хамгаалалтаар тасарсан шугам тоноглолын бүртгэл</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-blue-50 p-4 rounded">
+            <div>
+                <label class="block text-sm font-semibold">Салбар нэгж:</label>
+                <select id="branch" class="w-full border p-2 rounded">
+                    <option>Сүхбаатар</option><option>Хөтөл</option><option>Зүүнхараа</option>
+                    <option>Жаргалант</option><option>АЗА</option><option>ЗТТА</option>
+                    <option>ХҮТ</option><option>ДСЦТС ХК</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold">Хүчдэл (кВ):</label>
+                <select id="voltage" class="w-full border p-2 rounded">
+                    <option>0.22</option><option>0.4</option><option>6</option>
+                    <option>10</option><option>15</option><option>35</option><option>110</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold">Цаг агаар:</label>
+                <select id="weather" class="w-full border p-2 rounded">
+                    <option>Тогтуун</option><option>Бороотой</option><option>Дуу цахилгаантай бороотой</option>
+                    <option>Цастай</option><option>Цасан шуургатай</option><option>Шуургатай</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold">Тасарсан цаг (ММ:сс):</label>
+                <input type="time" id="startTime" class="w-full border p-2 rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold">Залгасан цаг (ММ:сс):</label>
+                <input type="time" id="endTime" class="w-full border p-2 rounded">
+            </div>
+            <div class="flex items-end">
+                <button onclick="addRow()" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Бүртгэх</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse border border-gray-300 text-sm">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="border p-2">д/д</th>
+                        <th class="border p-2">Салбар</th>
+                        <th class="border p-2">Хүчдэл</th>
+                        <th class="border p-2">Тасарсан</th>
+                        <th class="border p-2">Залгасан</th>
+                        <th class="border p-2 text-blue-600">Үргэлжилсэн (ц)</th>
+                        <th class="border p-2">Цаг агаар</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let count = 1;
+        function addRow() {
+            const branch = document.getElementById('branch').value;
+            const voltage = document.getElementById('voltage').value;
+            const weather = document.getElementById('weather').value;
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+
+            if(!start || !end) return alert("Цагаа оруулна уу!");
+
+            // Автомат тооцоолол (минутаар бодож цаг руу хөрвүүлэх)
+            const s = start.split(':');
+            const e = end.split(':');
+            const diffMin = (parseInt(e[0])*60 + parseInt(e[1])) - (parseInt(s[0])*60 + parseInt(s[1]));
+            const duration = (diffMin / 60).toFixed(2);
+
+            const row = `<tr>
+                <td class="border p-2 text-center">${count++}</td>
+                <td class="border p-2">${branch}</td>
+                <td class="border p-2 text-center">${voltage}</td>
+                <td class="border p-2 text-center">${start}</td>
+                <td class="border p-2 text-center">${end}</td>
+                <td class="border p-2 text-center font-bold text-blue-600">${duration}</td>
+                <td class="border p-2">${weather}</td>
+            </tr>`;
+            
+            document.getElementById('tableBody').innerHTML += row;
+        }
+    </script>
+</body>
+</html>
