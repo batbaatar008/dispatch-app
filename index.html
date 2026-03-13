@@ -3,64 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V4</title>
+    <title>Диспетчерийн бүртгэл V5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body class="bg-gray-100 p-4 font-sans text-sm">
+<body class="bg-slate-100 p-4 font-sans text-sm">
     <div class="max-w-full mx-auto">
         
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 uppercase font-bold text-center">
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-600">
-                <p class="text-gray-500 text-xs uppercase">Тасралт</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center font-black">
+            <div class="bg-white p-4 rounded-xl shadow border-b-4 border-blue-600">
+                <p class="text-gray-500 text-[10px] uppercase">Нийт тасралт</p>
                 <h3 id="totalCount" class="text-2xl">0</h3>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-orange-500">
-                <p class="text-gray-500 text-xs uppercase">Цаг /ц/</p>
+            <div class="bg-white p-4 rounded-xl shadow border-b-4 border-orange-500">
+                <p class="text-gray-500 text-[10px] uppercase">Нийт цаг /ц/</p>
                 <h3 id="totalHours" class="text-2xl">0.00</h3>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-red-600">
-                <p class="text-gray-500 text-xs uppercase">ДТЭХ /кВт*ц/</p>
+            <div class="bg-white p-4 rounded-xl shadow border-b-4 border-red-600">
+                <p class="text-gray-500 text-[10px] uppercase">Нийт ДТЭХ /кВт*ц/</p>
                 <h3 id="totalDTEH" class="text-2xl">0.0</h3>
             </div>
-            <div class="bg-green-600 p-4 rounded-lg shadow flex items-center justify-center cursor-pointer hover:bg-green-700" onclick="exportToExcel()">
-                <button class="text-white text-xs">EXCEL ТАТАХ</button>
+            <div class="bg-green-600 p-4 rounded-xl shadow flex items-center justify-center cursor-pointer hover:bg-green-700 transition" onclick="exportToExcel()">
+                <button class="text-white text-xs uppercase italic">Excel Татах</button>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-md mb-6 border border-gray-200">
-            <h2 class="text-lg font-black mb-6 text-blue-900 border-b pb-2 uppercase italic">Аваарийн тасралтын бүртгэл</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
+            <h2 class="text-base font-black mb-6 text-blue-900 border-b pb-2 uppercase italic">Аваарийн тасралтын систем</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 
-                <div class="space-y-2">
-                    <label class="font-bold text-xs uppercase">1. Ангилал & Нэгж</label>
-                    <select id="category" onchange="updateBranches()" class="w-full border p-2 rounded bg-yellow-50 font-bold border-yellow-200">
-                        <option value="Компани">Компани</option>
-                        <option value="Бусад ТЗЭ">Бусад ТЗЭ</option>
-                        <option value="Хэрэглэгч">Хэрэглэгч</option>
-                    </select>
-                    <select id="branch" class="w-full border p-2 rounded border-gray-300"></select>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                    <label class="font-bold text-[10px] uppercase text-blue-800">1. Ангилал & Нэгж</label>
+                    <select id="category" onchange="updateBranches()" class="w-full border p-2 rounded bg-yellow-50 font-bold border-yellow-200"></select>
+                    <select id="branch" class="w-full border p-2 rounded border-gray-300 bg-white font-medium"></select>
                     <input type="text" id="equipName" placeholder="Тоноглолын нэр" class="w-full border p-2 rounded">
                 </div>
 
-                <div class="space-y-2">
-                    <label class="font-bold text-xs uppercase">2. Техник үзүүлэлт</label>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 space-y-2">
+                    <label class="font-bold text-[10px] uppercase text-blue-800">2. Техник үзүүлэлт</label>
                     <div class="flex gap-2">
-                        <select id="voltageBase" class="w-1/2 border p-2 rounded"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select>
-                        <input type="number" id="pointCount" value="1" placeholder="Цэг" class="w-1/2 border p-2 rounded text-center">
+                        <select id="voltageBase" class="w-1/2 border p-2 rounded bg-white"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select>
+                        <input type="number" id="pointCount" value="1" class="w-1/2 border p-2 rounded text-center">
                     </div>
-                    <div class="flex gap-2">
-                        <input type="number" id="momentVolt" value="35" step="0.1" class="w-1/2 border p-2 rounded font-bold text-blue-700" placeholder="Эгшний кВ">
-                        <input type="number" id="momentCurrent" value="0" class="w-1/2 border p-2 rounded font-bold text-blue-700" placeholder="Эгшний А">
+                    <div class="flex gap-2 font-bold">
+                        <input type="number" id="momentVolt" value="35" step="0.1" class="w-1/2 border p-2 rounded text-blue-700" placeholder="кВ">
+                        <input type="number" id="momentCurrent" value="0" class="w-1/2 border p-2 rounded text-blue-700" placeholder="А">
                     </div>
-                    <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full border p-2 rounded font-bold text-center">
+                    <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full border p-2 rounded font-black text-center text-slate-700">
                 </div>
 
-                <div class="space-y-2">
-                    <label class="font-bold text-xs uppercase text-orange-600">3. Огноо & Цаг агаар</label>
-                    <input type="datetime-local" id="startTime" class="w-full border p-2 rounded border-red-200">
-                    <input type="datetime-local" id="endTime" class="w-full border p-2 rounded border-green-200">
-                    <select id="weather" class="w-full border p-2 rounded"><option>Тогтуун</option><option>Дуу цахилгаантай бороо</option><option>Шуургатай</option><option>Цастай</option></select>
+                <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 space-y-2">
+                    <label class="font-bold text-[10px] uppercase text-orange-800">3. Огноо (Синхрон)</label>
+                    <div>
+                        <span class="text-[9px] font-bold text-red-600">Тасарсан:</span>
+                        <input type="datetime-local" id="startTime" class="w-full border p-2 rounded border-red-200">
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-bold text-green-700">Залгасан:</span>
+                        <input type="datetime-local" id="endTime" class="w-full border p-2 rounded border-green-200">
+                    </div>
                 </div>
 
-                <div class
+                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100 space-y-2">
+                    <label class="font-bold text-[10px] uppercase text-purple-800">4. Хамгаалалт & Диспетчер</label>
+                    <select id="protection" class="w-full border p-2 rounded bg-white"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option></select>
+                    <select id="fault" class="w-full border p-2 rounded text-red-700 font-bold"><option>АШ</option><option>КШ</option><option>Дэд станц</option><option>Тоноглол</option></select>
+                    <input type="text" id="dispName" placeholder="Диспетчер" class="w-full border p-2 rounded font-bold uppercase">
+                </div>
+
+                <div class="bg-green-50 p-3 rounded-lg border border-green-100 flex flex-col justify-between space-y-2">
+                    <label class="font-bold text-[10px] uppercase text-green-800">5. Хадгалах</label>
+                    <textarea id="reason" rows="1" class="w-full border p-2 rounded text-xs" placeholder="Шалтгаан"></textarea>
+                    <textarea id="action" rows="1" class="w-full border p-2 rounded text-xs" placeholder="Арга хэмжээ"></textarea>
+                    <button onclick="saveData()" class="w-full bg-slate-900 text-white font-black py-3 rounded-lg hover:bg-black transition-all shadow-lg uppercase text-[11px]">Бүртгэл нэмэх</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-300">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-[11px] border-collapse" id="mainTable">
+                    <thead class="bg-slate-800 text-white font-bold uppercase text-center">
+                        <tr>
+                            <th class="p-3 border border-slate-700">д/д</th>
+                            <th class="p-3 border border-slate-700 text-left">Салбар</th>
+                            <th class="p-3 border border-slate-700">Тоноглол</th>
+                            <th class="p-3 border border-slate-700">кВ</th>
+                            <th class="p-3 border border-slate-700">Эгшний кВ</th>
+                            <th class="p-3 border border-slate-700">Эгшний А</th>
+                            <th class="p-3 border border-slate-700 text-red-400">Тасарсан</th>
+                            <th class="p-3 border border-slate-700 text-green-400">Залгасан</th>
+                            <th class="p-3 border border-slate-700 bg-orange-900">Цаг (ц)</th>
+                            <th class="p-3 border border-slate-700 bg-red-900 italic">ДТЭХ</th>
+                            <th class="p-3 border border-slate-700">Диспетчер</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="text-center divide-y font-medium text-gray-700"></tbody>
+                    <tfoot class="bg-slate-100 font-black italic">
+                        <tr>
+                            <td colspan="8" class="p-3 text-right">НИЙТ ДҮН:</td>
+                            <td id="footerHours" class="p-3 border text-orange-700">0.00</td>
+                            <td id="footerDTEH" class="p-3 border text-red-700">0.0</td>
+                            <td class="border"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const branchOptions = {
+            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ", "ДСЦТС ХК"],
+            "Бусад ТЗЭ": ["ДТЗЭ", "ҮТЗЭ", "ТТЗЭ", "Бусад ТЗЭ"],
+            "Хэрэглэгч": ["Уул уурхай", "ААН", "Хувь хүн", "Үйлдвэр"]
+        };
+
+        // Огноог синхрон болгох функц
+        function setNow() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const formatted = now.toISOString().slice(0, 16);
+            document.getElementById('startTime').value = formatted;
+            document.getElementById('endTime').value = formatted;
+        }
+
+        function updateBranches() {
+            const cat = document.getElementById('category').value;
+            const bSelect = document.getElementById('branch');
+            bSelect.innerHTML = "";
+            branchOptions[cat].forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n; opt.textContent = n;
+                bSelect.appendChild(opt);
+            });
+        }
+
+        function init() {
+            const catSelect = document.getElementById('category');
+            catSelect.innerHTML = "";
+            Object.keys(branchOptions).forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k; opt.textContent = k;
+                catSelect.appendChild(opt);
+            });
+            updateBranches();
+            setNow();
+        }
+
+        let dataRows = [];
+
+        function saveData() {
+            const s = document.getElementById('startTime').value;
+            const e = document.getElementById('endTime').value;
+            if (!s || !e) return alert("Огноог бүрэн оруулна уу!");
+
+            const startD = new Date(s);
+            const endD = new Date(e);
+            const diff = (endD - startD) / (1000 * 60 * 60);
+            if (diff < 0) return alert("Залгасан цаг тасарсан цагаас өмнө байж болохгүй!");
+
+            const kv = parseFloat(document.getElementById('momentVolt').value) || 0;
+            const amp = parseFloat(document.getElementById('momentCurrent').value) || 0;
+            const cos = parseFloat(document.getElementById('cosphi').value) || 0.9;
+            const dteh = parseFloat((1.732 * kv * amp * cos * diff).toFixed(1));
+
+            const entry = {
+                id: dataRows.length + 1,
+                branch: document.getElementById('branch').value,
+                equip: document.getElementById('equipName').value || "---",
+                vBase: document.getElementById('voltageBase').value,
+                vMom: kv,
+                a: amp,
+                start: s.replace('T', ' '),
+                end: e.replace('T', ' '),
+                hrs: parseFloat(diff.toFixed(2)),
+                dteh: dteh,
+                disp: document.getElementById('dispName').value || "---"
+            };
+
+            dataRows.push(entry);
+            refresh();
+        }
+
+        function refresh() {
+            const tb = document.getElementById('tableBody');
+            tb.innerHTML = "";
+            let th = 0, td = 0;
+            dataRows.forEach(r => {
+                th += r.hrs; td += r.dteh;
+                tb.innerHTML += `
+                    <tr class="hover:bg-blue-50 border-b">
+                        <td class="p-3 border">${r.id}</td>
+                        <td class="p-3 border font-black text-left">${r.branch}</td>
+                        <td class="p-3 border text-blue-800">${r.equip}</td>
+                        <td class="p-3 border font-bold">${r.vBase}</td>
+                        <td class="p-3 border text-blue-700">${r.vMom}</td>
+                        <td class="p-3 border text-blue-700 font-bold">${r.a}</td>
+                        <td class="p-3 border text-red-600 font-mono">${r.start}</td>
+                        <td class="p-3 border text-green-700 font-mono">${r.end}</td>
+                        <td class="p-3 border font-black bg-orange-50">${r.hrs}</td>
+                        <td class="p-3 border font-black bg-red-50 text-red-700 italic underline">${r.dteh}</td>
+                        <td class="p-3 border font-bold uppercase">${r.disp}</td>
+                    </tr>`;
+            });
+            document.getElementById('totalCount').innerText = dataRows.length;
+            document.getElementById('totalHours').innerText = th.toFixed(2);
+            document.getElementById('totalDTEH').innerText = td.toFixed(1);
+            document.getElementById('footerHours').innerText = th.toFixed(2);
+            document.getElementById('footerDTEH').innerText = td.toFixed(1);
+        }
+
+        function exportToExcel() {
+            if (dataRows.length === 0) return alert("Тайлан хоосон байна!");
+            const ws = XLSX.utils.json_to_sheet(dataRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Тасралтын тайлан");
+            XLSX.writeFile(wb, "Disp_Report_Final.xlsx");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
