@@ -3,35 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл - Бүрэн хувилбар</title>
+    <title>Диспетчерийн бүртгэлийн систем V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .table-container { overflow-x: auto; white-space: nowrap; }
+        input, select { font-size: 13px !important; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans text-[11px]">
-    <div class="max-w-[1800px] mx-auto p-2">
+<body class="bg-slate-100 font-sans text-slate-800">
+    <div class="max-w-[100%] mx-auto p-4">
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 uppercase">
-            <div class="bg-white p-3 rounded shadow border-b-2 border-blue-600">
-                <p class="text-gray-500 font-bold">Нийт тасралт</p>
-                <h3 id="totalCount" class="text-xl font-black">0</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-blue-600">
+                <p class="text-xs font-bold text-slate-500 uppercase">Нийт тасралт</p>
+                <h3 id="totalCount" class="text-2xl font-black text-slate-800">0</h3>
             </div>
-            <div class="bg-white p-3 rounded shadow border-b-2 border-orange-500">
-                <p class="text-gray-500 font-bold">Нийт хугацаа (ц)</p>
-                <h3 id="totalHours" class="text-xl font-black">0.00</h3>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-orange-500">
+                <p class="text-xs font-bold text-slate-500 uppercase">Нийт цаг /ц/</p>
+                <h3 id="totalHours" class="text-2xl font-black text-slate-800">0.00</h3>
             </div>
-            <div class="bg-white p-3 rounded shadow border-b-2 border-red-600">
-                <p class="text-gray-500 font-bold">Нийт ДТЭХ (кВт*ц)</p>
-                <h3 id="totalDTEH" class="text-xl font-black">0.0</h3>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-red-600">
+                <p class="text-xs font-bold text-slate-500 uppercase">Нийт ДТЭХ /кВт*ц/</p>
+                <h3 id="totalDTEH" class="text-2xl font-black text-slate-800">0.0</h3>
             </div>
-            <div class="bg-green-600 p-3 rounded shadow flex items-center justify-center cursor-pointer hover:bg-green-700 transition" onclick="exportToExcel()">
-                <button class="text-white font-black">EXCEL ТАЙЛАН ТАТАХ</button>
+            <div class="bg-green-600 p-4 rounded-xl shadow-md flex items-center justify-center cursor-pointer hover:bg-green-700 transition" onclick="exportToExcel()">
+                <button class="text-white font-black text-sm uppercase tracking-wider italic">Excel Тайлан Татах</button>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded shadow mb-4 border border-gray-300">
-            <h2 class="text-sm font-black mb-3 text-blue-900 border-b pb-1 uppercase italic">Аваарийн тасралтын дэлгэрэнгүй бүртгэл (Excel дарааллаар)</h2>
-            <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-8 gap-2">
-                
-                <div class="flex flex-col">
-                    <label class="font-bold mb-1">Ангилал:</label>
-                    <select id="category" onchange="updateSubBranches()" class="border p-1 rounded
+        <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-slate-200">
+            <h2 class="text-base font-black mb-6 text-slate-900 border-b pb-2 uppercase flex items-center">
+                <span class="bg-blue-600 text-white p-1 rounded mr-2 text-xs">NEW</span> Аваарийн тасралтын дэлгэрэнгүй бүртгэл
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                <div class="space-y-4 bg-slate-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-blue-700 border-b text-xs uppercase">1. Үндсэн мэдээлэл</h3>
+                    <div><label class="block text-[11px] font-bold mb-1">Ангилал:</label>
+                        <select id="category" onchange="updateSubBranches()" class="w-full border p-2 rounded bg-white shadow-sm border-slate-300">
+                            <option>Компани</option><option>Бусад ТЗЭ</option><option>Хэрэглэгч</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold mb-1">Салбар нэгж:</label>
+                        <select id="branch" class="w-full border p-2 rounded bg-white shadow-sm border-slate-300"></select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold mb-1">Тоноглолын нэр:</label>
+                        <input type="text" id="equipName" placeholder="Ш-452" class="w-full border p-2 rounded">
+                    </div>
+                </div>
+
+                <div class="space-y-4 bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-blue-700 border-b text-xs uppercase">2. Техник үзүүлэлт</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-[11px] font-bold mb-1">Хүчдэл /кВ/:</label>
+                            <select id="voltageBase" class="w-full border p-2 rounded"><option value="35">35</option><option value="110">110</option><option value="10">10</option><option value="6">6</option><option value="0.4">0.4</option></select>
+                        </div>
+                        <div><label class="block text-[11px] font-bold mb-1">Цэгийн тоо:</label>
+                            <input type="number" id="pointCount" value="1" class="w-full border p-2 rounded">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-[11px] font-bold mb-1 text-blue-600">Эгшний кВ:</label>
+                            <input type="number" id="momentVolt" value="35" class="w-full border p-2 rounded font-bold border-blue-300">
+                        </div>
+                        <div><label class="block text-[11px] font-bold mb-1 text-blue-600">Эгшний А:</label>
+                            <input type="number" id="momentCurrent" value="0" class="w-full border p-2 rounded font-bold border-blue-300">
+                        </div>
+                    </div>
+                    <div><label class="block text-[11px] font-bold mb-1">cosφ:</label>
+                        <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full border p-2 rounded border-blue-300 font-bold text-blue-800 text-center">
+                    </div>
+                </div>
+
+                <div class="space-y-4 bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-700 border-b text-xs uppercase">3. Хугацаа & Цаг агаар</h3>
+                    <div><label class="block text-[11px] font-bold text-red-600 italic">Тасарсан:</label>
+                        <input type="datetime-local" id="startTime" class="w-full border p-2 rounded border-red-200 shadow-inner">
+                    </div>
+                    <div><label class="block text-[11px] font-bold text-green-600 italic">Залгасан:</label>
+                        <input type="datetime-local" id="endTime" class="w-full border p-2 rounded border-green-200 shadow-inner">
+                    </div>
+                    <div><label class="block text-[11px] font-bold">Цаг агаар:</label>
+                        <select id="weather" class="w-full border p-2 rounded"><option>Тогтуун</option><option>Дуу цахилгаантай бороо</option><option>Шуургатай</option><option>Цастай</option></select>
+                    </div>
+                </div>
+
+                <div class="space-y-4 bg-purple-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-purple-700 border-b text-xs uppercase">4. Хамгаалалт & Гэмтэл</h3>
+                    <div><label class="block text-[11px] font-bold">Хамгаалалт:</label>
+                        <select id="protection" class="w-full border p-2 rounded"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option></select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold">Гэмтэл:</label>
+                        <select id="fault" class="w-full border p-2 rounded text-red-700 font-bold"><option>АШ</option><option>КШ</option><option>Дэд станц</option><option>Тоноглол</option></select>
+                    </div>
+                    <div><label class="block text-[11px] font-bold">Диспетчер:</label>
+                        <input type="text" id="dispName" placeholder="Диспетчер" class="w-full border p-2 rounded bg-white font-bold border-purple-200">
+                    </div>
+                </div>
+
+                <div class="space-y-4 bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-700 border-b text-xs uppercase">5. Тайлбар & Шийдвэр</h3>
+                    <div><label class="block text-[11px] font-bold">Тасралтын шалтгаан:</label>
+                        <textarea id="reason" rows="2" class="w-full border p-2 rounded shadow-sm" placeholder="Шалтгаан бичнэ..."></textarea>
+                    </div>
+                    <div><label class="block text-[11px] font-bold">Авсан арга хэмжээ:</label>
+                        <textarea id="action" rows="2" class="w-full border p-2 rounded shadow-sm" placeholder="Арга хэмжээ бичнэ..."></textarea>
+                    </div>
+                    <button onclick="addData()" class="w-full bg-slate-800 text-white font-black py-4 rounded-lg hover:bg-black transition-all shadow-lg uppercase text-[12px] tracking-widest mt-2">
+                        БҮРТГЭЛ ХАДГАЛАХ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-xl rounded-xl border border-slate-300 table-container">
+            <table class="min-w-full text-[10px] border-collapse" id="mainTable">
+                <thead>
+                    <tr class="bg-slate-800 text-white font-bold text-center uppercase border-b-2 border-slate-900">
+                        <th class="p-3 border border-slate-700">д/д</th>
+                        <th class="p-3 border border-slate-700">Ангилал</th>
+                        <th class="p-3 border border-slate-700">Салбар нэгж</th>
+                        <th class="p-3 border border-slate-700">Тоноглол</th>
+                        <th class="p-3 border border-slate-700">кВ</th>
+                        <th class="p-3 border border-slate-700">Цэг</th>
+                        <th class="p-3 border border-slate-700 bg-blue-900 text-yellow-400">Эгшний кВ</th>
+                        <th class="p-3 border border-slate-700 bg-blue-900 text-yellow-400">Эгшний А</th>
+                        <th class="p-3 border border-slate-700 italic">cosφ</th>
+                        <th class="p-3 border border-slate-700 text-red-400">Тасарсан</th>
+                        <th class="p-3 border border-slate-700 text-green-400">Залгасан</th>
+                        <th class="p-3 border border-slate-700 bg-orange-900 text-white font-black">Хугацаа /ц/</th>
+                        <th class="p-3 border border-slate-700 bg-red-900 text-white font-black italic underline">ДТЭХ /кВт*ц/</th>
+                        <th class="p-3 border border-slate-700">Хамгаалалт</th>
+                        <th class="p-3 border border-slate-700">Цаг агаар</th>
+                        <th class="p-3 border border-slate-700">Гэмтэл</th>
+                        <th class="p-3 border border-slate-700">Шалтгаан</th>
+                        <th class="p-3 border border-slate-700">Арга хэмжээ</th>
+                        <th class="p-3 border border-slate-700 font-bold bg-slate-900">Диспетчер</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="text-center divide-y font-medium text-slate-700"></tbody>
+                <tfoot class="bg-slate-100 text-slate-900 font-black italic uppercase">
+                    <tr>
+                        <td colspan="11" class="p-4 text-right border-r">НИЙТ ДҮН ХҮСНЭГТЭЭР:</td>
+                        <td id="footerHours" class="p-4 border text-orange-600 bg-orange-50 text-base">0.00</td>
+                        <td id="footerDTEH
