@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V11</title>
+    <title>Диспетчерийн бүртгэл V13 - Тайлантай хувилбар</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -11,177 +11,105 @@
         body { font-family: 'Manrope', sans-serif; }
         .editing-row { background-color: #fef9c3 !important; }
         label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        /* Тайлангийн стиль */
+        #reportModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; padding: 20px; align-items: flex-start; justify-content: center; overflow-y: auto; }
+        .report-content { background: white; width: 100%; max-width: 1100px; border-radius: 24px; padding: 40px; margin-top: 20px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 12px; text-align: center; }
+        .branch-cell { background-color: #fef08a; font-weight: 800; color: #1e293b; }
     </style>
 </head>
 <body class="bg-slate-100 p-3 md:p-6 text-slate-800">
     <div class="max-w-[1600px] mx-auto">
         
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b pb-4 border-slate-200">
             <div>
                 <h1 class="text-2xl font-black text-blue-900 italic tracking-tighter uppercase">Аваарийн тасралтын бүртгэл</h1>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Darkhan Selenge Distribution Network</p>
             </div>
-            <div class="flex gap-4 items-center">
-                <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-slate-200 text-center min-w-[150px]">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase leading-none">Нийт ДТЦЭХ /кВт.ц/</p>
-                    <h2 id="totalDTEH" class="text-2xl font-black text-red-600 mt-1">0.0</h2>
+            <div class="flex gap-3 items-center">
+                <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Нийт ДТЦЭХ</p>
+                    <h2 id="totalDTEH" class="text-xl font-black text-red-600">0.0</h2>
                 </div>
-                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl shadow-lg font-bold text-xs uppercase transition-all">Excel Тайлан</button>
+                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl shadow-lg font-bold text-xs uppercase transition-all">Excel Татах</button>
+                <button onclick="openReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow-lg font-bold text-xs uppercase transition-all">Тайлан Харах</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-[11px] font-black text-blue-600 uppercase mb-4 border-b pb-1">1. Салбар нэгж</h3>
                 <div class="space-y-3">
-                    <div>
-                        <label>Үндсэн ангилал</label>
-                        <select id="category" onchange="updateBranches()" class="w-full p-2 rounded-lg border font-bold bg-slate-50 text-sm"></select>
-                    </div>
-                    <div>
-                        <label>Салбар хэсэг</label>
-                        <select id="branch" class="w-full p-2 rounded-lg border font-bold text-blue-800 text-sm"></select>
-                    </div>
-                    <div>
-                        <label>ХБ тоноглолын нэр</label>
-                        <input type="text" id="equipName" placeholder="Жишээ: Ш-452" class="w-full p-2 rounded-lg border font-bold text-sm">
-                    </div>
+                    <div><label>Үндсэн ангилал</label><select id="category" onchange="updateBranches()" class="w-full p-2 rounded-lg border font-bold bg-slate-50 text-sm"></select></div>
+                    <div><label>Салбар хэсэг</label><select id="branch" class="w-full p-2 rounded-lg border font-bold text-blue-800 text-sm"></select></div>
+                    <div><label>Тоноглол</label><input type="text" id="equipName" class="w-full p-2 rounded-lg border font-bold text-sm"></div>
                 </div>
             </div>
-
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-[11px] font-black text-purple-600 uppercase mb-4 border-b pb-1">2. Техник үзүүлэлт</h3>
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label>Хүчдэл /кВ/</label>
-                            <select id="voltageBase" class="w-full p-2 rounded-lg border font-bold text-sm">
-                                <option value="35">35кВ</option><option value="110">110кВ</option>
-                                <option value="10">10кВ</option><option value="6">6кВ</option>
-                                <option value="0.4">0.4кВ</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Цэгийн тоо</label>
-                            <input type="number" id="pointCount" value="1" class="w-full p-2 rounded-lg border text-center font-bold text-sm">
-                        </div>
+                        <div><label>Хүчдэл</label><select id="voltageBase" class="w-full p-2 rounded-lg border font-bold text-sm"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select></div>
+                        <div><label>Цэг</label><input type="number" id="pointCount" value="1" class="w-full p-2 rounded-lg border text-center font-bold text-sm"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label>Эгшний кВ</label>
-                            <input type="number" id="momentVolt" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm">
-                        </div>
-                        <div>
-                            <label>Эгшний А</label>
-                            <input type="number" id="momentCurrent" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm">
-                        </div>
+                        <div><label>Эгшний кВ</label><input type="number" id="momentVolt" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm"></div>
+                        <div><label>Эгшний А</label><input type="number" id="momentCurrent" class="w-full p-2 rounded-lg border font-bold text-blue-700 bg-blue-50 text-sm"></div>
                     </div>
-                    <div>
-                        <label>Чадал (cosφ)</label>
-                        <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full p-2 rounded-lg border text-center font-black text-sm">
-                    </div>
+                    <div><label>cosφ</label><input type="number" id="cosphi" value="0.9" step="0.01" class="w-full p-2 rounded-lg border text-center font-black text-sm"></div>
                 </div>
             </div>
-
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-orange-600 uppercase mb-4 border-b pb-1">3. Огноо & Цаг</h3>
+                <h3 class="text-[11px] font-black text-orange-600 uppercase mb-4 border-b pb-1">3. Огноо & Цаг агаар</h3>
                 <div class="space-y-3">
-                    <div>
-                        <label class="text-red-500">Тасарсан хугацаа</label>
-                        <input type="datetime-local" id="startTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]">
-                    </div>
-                    <div>
-                        <label class="text-green-600">Залгасан хугацаа</label>
-                        <input type="datetime-local" id="endTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]">
-                    </div>
-                    <div class="bg-slate-900 p-3 rounded-xl text-center shadow-lg mt-1">
-                        <label class="text-slate-400 mb-0">Үргэлжилсэн цаг</label>
-                        <h4 id="liveTime" class="text-white text-2xl font-black leading-none">0.00</h4>
-                    </div>
+                    <div><label class="text-red-500">Тасарсан</label><input type="datetime-local" id="startTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]"></div>
+                    <div><label class="text-green-600">Залгасан</label><input type="datetime-local" id="endTime" oninput="updateLiveTime()" class="w-full p-2 rounded-lg border font-bold text-[11px]"></div>
+                    <div><label>Цаг агаар</label><select id="weather" class="w-full p-2 rounded-lg border font-bold bg-blue-50/50">
+                        <option value="Тогтуун">Тогтуун</option><option value="Цас">Цас</option><option value="Бороо">Бороо</option><option value="Шуурга">Шуурга</option><option value="Хүйтэн">Хүйтэн</option><option value="Аянга">Аянга</option>
+                    </select></div>
                 </div>
             </div>
-
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-red-600 uppercase mb-4 border-b pb-1">4. Гэмтэл & Цаг агаар</h3>
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <label>Ажилласан хамгаалалт</label>
-                        <select id="protection" class="w-full p-2 rounded-lg border font-bold"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option><option>Бусад</option></select>
-                    </div>
-                    <div>
-                        <label>Цаг агаарын байдал</label>
-                        <select id="weather" class="w-full p-2 rounded-lg border font-bold bg-blue-50/50">
-                            <option value="Хэвийн">Хэвийн</option>
-                            <option value="Цас">Цас</option>
-                            <option value="Бороо">Бороо</option>
-                            <option value="Шуурга">Шуурга</option>
-                            <option value="Хүйтэн">Хэт хүйтэн</option>
-                            <option value="Аянга">Аянга цахилгаан</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Гэмтлийн төрөл</label>
-                        <select id="fault" class="w-full p-2 rounded-lg border text-red-700 font-bold">
-                            <option value="Дэд станц">Дэд станц</option>
-                            <option value="АШ">АШ (Агаарын шугам)</option>
-                            <option value="КШ">КШ (Кабель шугам)</option>
-                            <option value="Хэт хүчдэл">Хэт хүчдэлийн хамгаалалт</option>
-                            <option value="Тоноглол">Тоноглолын гэмтэл</option>
-                            <option value="Тодорхойгүй">Тодорхойгүй</option>
-                            <option value="Бусад">Бусад</option>
-                        </select>
-                    </div>
+                <h3 class="text-[11px] font-black text-red-600 uppercase mb-4 border-b pb-1">4. Гэмтэл & Хамгаалалт</h3>
+                <div class="space-y-3">
+                    <div><label>Хамгаалалт</label><select id="protection" class="w-full p-2 rounded-lg border font-bold text-sm"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option><option>Бусад</option></select></div>
+                    <div><label>Гэмтэл</label><select id="fault" class="w-full p-2 rounded-lg border text-red-700 font-bold text-sm">
+                        <option value="Дэд станц">Дэд станц</option><option value="АШ">АШ</option><option value="КШ">КШ</option><option value="Хэт хүчдэл">Хэт хүчдэл</option><option value="Тоноглол">Тоноглол</option><option value="Тодорхойгүй">Тодорхойгүй</option><option value="Бусад">Бусад</option>
+                    </select></div>
+                    <div class="bg-slate-900 p-2 rounded-xl text-center"><label class="text-slate-400 mb-0">Цаг</label><h4 id="liveTime" class="text-white text-xl font-black">0.00</h4></div>
                 </div>
             </div>
-
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-[11px] font-black text-green-600 uppercase mb-4 border-b pb-1">5. Үйлдэл & Бүртгэл</h3>
-                <div class="space-y-3 flex flex-col h-full">
-                    <div>
-                        <label>Тасралтын шалтгаан</label>
-                        <textarea id="reason" rows="1" class="w-full p-2 rounded-lg border text-xs" placeholder="..."></textarea>
-                    </div>
-                    <div>
-                        <label>Авсан арга хэмжээ</label>
-                        <textarea id="action" rows="1" class="w-full p-2 rounded-lg border text-xs" placeholder="..."></textarea>
-                    </div>
-                    <div>
-                        <label>Диспетчерийн нэр</label>
-                        <input type="text" id="dispName" placeholder="Нэр оруулна уу" class="w-full p-2 rounded-lg border font-black uppercase text-xs">
-                    </div>
+                <h3 class="text-[11px] font-black text-green-600 uppercase mb-4 border-b pb-1">5. Үйлдэл & Диспетчер</h3>
+                <div class="space-y-3">
+                    <div><label>Арга хэмжээ</label><textarea id="action" rows="1" class="w-full p-2 rounded-lg border text-xs"></textarea></div>
+                    <div><label>Диспетчер</label><input type="text" id="dispName" class="w-full p-2 rounded-lg border font-black uppercase text-[10px]"></div>
                     <div class="pt-2">
-                        <button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 hover:bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg transition-all active:scale-95">Хадгалах</button>
+                        <button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg active:scale-95 transition-all">Хадгалах</button>
                         <button id="cancelBtn" onclick="resetForm()" class="hidden w-full bg-slate-400 text-white py-2 rounded-lg text-[9px] font-bold mt-2">Цуцлах</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden mb-10">
             <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                <div class="relative">
-                    <input type="text" id="search" oninput="filterTable()" placeholder="Хайлт..." class="p-2 px-10 rounded-full border text-sm w-80 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                    <span class="absolute left-4 top-2.5 opacity-30">🔍</span>
-                </div>
-                <div class="flex gap-4">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Бүртгэл: <span id="countBadge" class="text-blue-600 text-sm">0</span></span>
-                </div>
+                <input type="text" id="search" oninput="filterTable()" placeholder="Хайлт..." class="p-2 px-6 rounded-full border text-sm w-80 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="clearAllData()" class="text-red-400 hover:text-red-600 text-[10px] font-bold uppercase">Өгөгдлийг устгах</button>
             </div>
-            <div class="overflow-x-auto max-h-[550px]">
-                <table class="min-w-full text-[10.5px] border-collapse" id="mainTable">
-                    <thead class="bg-slate-900 text-white sticky top-0 z-20 uppercase font-bold">
+            <div class="overflow-x-auto max-h-[500px]">
+                <table class="min-w-full text-[10.5px] border-collapse">
+                    <thead class="bg-slate-900 text-white sticky top-0 z-20 uppercase font-bold text-center">
                         <tr>
                             <th class="p-4 border border-slate-800">№</th>
                             <th class="p-4 border border-slate-800 text-left">Салбар</th>
                             <th class="p-4 border border-slate-800 text-left">Тоноглол</th>
-                            <th class="p-4 border border-slate-800">Хүчдэл / А</th>
-                            <th class="p-4 border border-slate-800">Тасарсан</th>
-                            <th class="p-4 border border-slate-800">Залгасан</th>
+                            <th class="p-4 border border-slate-800">кВ / А</th>
+                            <th class="p-4 border border-slate-800 text-red-400">Тасарсан</th>
+                            <th class="p-4 border border-slate-800 text-green-400">Залгасан</th>
                             <th class="p-4 border border-slate-800">Цаг</th>
                             <th class="p-4 border border-slate-800 bg-red-800/50">ДТЦЭХ</th>
-                            <th class="p-4 border border-slate-800">Цаг агаар</th>
-                            <th class="p-4 border border-slate-800 text-left">Гэмтэл</th>
+                            <th class="p-4 border border-slate-800">Гэмтэл</th>
                             <th class="p-4 border border-slate-800">Диспетчер</th>
                             <th class="p-4 border border-slate-800">Үйлдэл</th>
                         </tr>
@@ -192,14 +120,48 @@
         </div>
     </div>
 
+    <div id="reportModal">
+        <div class="report-content shadow-2xl">
+            <div class="flex justify-between items-center mb-8 border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-black uppercase text-slate-800 italic">Аваарийн тасралтын мэдээний тайлан</h2>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Darkhan Selenge Distribution Network JSC</p>
+                </div>
+                <button onclick="closeReport()" class="bg-slate-800 hover:bg-black text-white px-8 py-3 rounded-xl font-bold uppercase text-xs transition-all">Хаах</button>
+            </div>
+            
+            <div class="flex gap-8 mb-6 text-xs font-bold text-slate-500 uppercase italic">
+                <span>Шүүлт: <span class="text-blue-600">2026.01.01 - 2026.03.13</span></span>
+                <span>Нэгжээр: <span class="text-blue-600">Бүх салбар</span></span>
+            </div>
+
+            <table class="w-full report-table text-sm border-collapse shadow-sm">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 uppercase text-[11px] font-black">
+                        <th class="w-16">№</th>
+                        <th class="text-left px-6">Төрөл</th>
+                        <th>Хэмжих нэгж</th>
+                        <th>Салбар хэсэг</th>
+                        <th class="w-40">Үзүүлэлт</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+            </table>
+            
+            <div class="mt-8 flex justify-end">
+                <p class="text-[10px] text-slate-400 font-bold uppercase italic">Тайлан гаргасан: Систем AI</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         const branches = {
-            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ", "Бусад", "ДСЦТС ХК"],
+            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ", "ДСЦТС ХК"],
             "Бусад ТЗЭ": ["ДТЗЭ", "ҮТЗЭ", "ТТЗЭ", "Бусад"],
             "Хэрэглэгч": ["Уул уурхай", "ААН", "Хувь хүн", "Үйлдвэр"]
         };
 
-        let db = [];
+        let db = JSON.parse(localStorage.getItem('DSEDN_DATA')) || [];
         let editId = null;
 
         function updateBranches() {
@@ -207,8 +169,7 @@
             const bSel = document.getElementById('branch');
             bSel.innerHTML = "";
             branches[cat].forEach(n => {
-                const o = document.createElement('option');
-                o.value = n; o.textContent = n; bSel.appendChild(o);
+                const o = document.createElement('option'); o.value = n; o.textContent = n; bSel.appendChild(o);
             });
         }
 
@@ -223,7 +184,6 @@
             const s = document.getElementById('startTime').value;
             const e = document.getElementById('endTime').value;
             if(!s || !e) return alert("Хугацаа оруулна уу!");
-
             const diff = (new Date(e) - new Date(s)) / (1000 * 60 * 60);
             const kv = parseFloat(document.getElementById('momentVolt').value) || 0;
             const amp = parseFloat(document.getElementById('momentCurrent').value) || 0;
@@ -237,76 +197,85 @@
                 equip: document.getElementById('equipName').value || "---",
                 vBase: document.getElementById('voltageBase').value,
                 point: document.getElementById('pointCount').value,
-                vMom: kv,
-                a: amp,
-                cos: cos,
-                start: s,
-                end: e,
-                hrs: diff.toFixed(2),
-                dteh: dteh,
+                vMom: kv, a: amp, cos: cos, start: s, end: e, hrs: diff.toFixed(2), dteh: dteh,
                 prot: document.getElementById('protection').value,
                 weather: document.getElementById('weather').value,
                 fault: document.getElementById('fault').value,
                 disp: document.getElementById('dispName').value || "---",
-                reason: document.getElementById('reason').value,
                 action: document.getElementById('action').value
             };
 
             if (editId) {
-                const idx = db.findIndex(r => r.id === editId);
-                db[idx] = rowData;
-            } else {
-                db.push(rowData);
+                const idx = db.findIndex(r => r.id === editId); db[idx] = rowData;
+            } else { db.push(rowData); }
+
+            localStorage.setItem('DSEDN_DATA', JSON.stringify(db));
+            resetForm(); render();
+        }
+
+        // Тайлан нээх функц (Чиний хүссэн зураг шиг харагдуулна)
+        function openReport() {
+            if (db.length === 0) return alert("Мэдээлэл хоосон байна!");
+            const body = document.getElementById('reportTableBody');
+            body.innerHTML = "";
+            
+            const groups = {};
+            db.forEach(item => {
+                if (!groups[item.branch]) groups[item.branch] = { count: 0, hrs: 0, dteh: 0 };
+                groups[item.branch].count += 1;
+                groups[item.branch].hrs += parseFloat(item.hrs);
+                groups[item.branch].dteh += parseFloat(item.dteh);
+            });
+
+            let i = 1;
+            let sumC = 0, sumH = 0, sumD = 0;
+
+            for (const b in groups) {
+                const d = groups[b];
+                const avgH = (d.hrs / d.count).toFixed(2);
+                sumC += d.count; sumH += d.hrs; sumD += d.dteh;
+                body.innerHTML += `
+                    <tr>
+                        <td rowspan="3" class="font-black text-slate-400 bg-slate-50">${i}</td>
+                        <td class="text-left px-6">Тасралтын тоо</td><td>тоо</td>
+                        <td rowspan="3" class="branch-cell border-l-2 border-slate-300">${b}</td>
+                        <td class="font-black">${d.count}</td>
+                    </tr>
+                    <tr class="bg-slate-50/50">
+                        <td class="text-left px-6 text-slate-500">тасралтын дундаж хугацаа</td><td>цаг</td>
+                        <td class="font-bold text-orange-600">${avgH}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left px-6 text-slate-500 italic">Дутуу түгээсэн цахилгаан эрчим хүч</td><td>кВт.ц</td>
+                        <td class="font-black text-red-600">${d.dteh.toFixed(1)}</td>
+                    </tr>`;
+                i++;
             }
 
-            resetForm();
-            render();
+            // Нэгдсэн дүн
+            body.innerHTML += `
+                <tr class="bg-slate-900 text-white border-t-4 border-white">
+                    <td rowspan="3" class="font-black text-xl">Σ</td>
+                    <td class="text-left px-6 font-bold uppercase">Нийт тасралтын тоо</td><td>тоо</td>
+                    <td rowspan="3" class="bg-blue-600 font-black text-white text-lg uppercase tracking-tighter">ДСЦТС ХК</td>
+                    <td class="font-black text-lg underline">${sumC}</td>
+                </tr>
+                <tr class="bg-slate-800 text-white">
+                    <td class="text-left px-6 font-bold uppercase">дундаж хугацаа</td><td>цаг</td>
+                    <td class="font-black text-lg underline">${(sumH/sumC).toFixed(2)}</td>
+                </tr>
+                <tr class="bg-slate-800 text-white">
+                    <td class="text-left px-6 font-bold uppercase italic">Нийт ДТЦЭХ</td><td>кВт.ц</td>
+                    <td class="font-black text-2xl text-yellow-400 underline">${sumD.toFixed(1)}</td>
+                </tr>`;
+
+            document.getElementById('reportModal').style.display = 'flex';
         }
 
-        function editRow(id) {
-            editId = id;
-            const data = db.find(r => r.id === id);
-            document.getElementById('category').value = data.category;
-            updateBranches();
-            document.getElementById('branch').value = data.branch;
-            document.getElementById('equipName').value = data.equip;
-            document.getElementById('voltageBase').value = data.vBase;
-            document.getElementById('pointCount').value = data.point;
-            document.getElementById('momentVolt').value = data.vMom;
-            document.getElementById('momentCurrent').value = data.a;
-            document.getElementById('cosphi').value = data.cos;
-            document.getElementById('startTime').value = data.start;
-            document.getElementById('endTime').value = data.end;
-            document.getElementById('protection').value = data.prot;
-            document.getElementById('weather').value = data.weather;
-            document.getElementById('fault').value = data.fault;
-            document.getElementById('dispName').value = data.disp;
-            document.getElementById('reason').value = data.reason;
-            document.getElementById('action').value = data.action;
-
-            document.getElementById('saveBtn').innerText = "Шинэчлэх";
-            document.getElementById('saveBtn').className = "w-full bg-orange-600 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg";
-            document.getElementById('cancelBtn').classList.remove('hidden');
-            updateLiveTime();
-            render();
-        }
-
-        function resetForm() {
-            editId = null;
-            document.getElementById('equipName').value = "";
-            document.getElementById('momentVolt').value = "";
-            document.getElementById('momentCurrent').value = "";
-            document.getElementById('reason').value = "";
-            document.getElementById('action').value = "";
-            document.getElementById('saveBtn').innerText = "Хадгалах";
-            document.getElementById('saveBtn').className = "w-full bg-blue-600 hover:bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg transition-all";
-            document.getElementById('cancelBtn').classList.add('hidden');
-            render();
-        }
+        function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
 
         function render() {
-            const body = document.getElementById('tableBody');
-            body.innerHTML = "";
+            const body = document.getElementById('tableBody'); body.innerHTML = "";
             let totalD = 0;
             db.forEach((r, i) => {
                 totalD += parseFloat(r.dteh);
@@ -316,50 +285,56 @@
                         <td class="p-3 border border-slate-200">${i+1}</td>
                         <td class="p-3 border border-slate-200 text-left text-blue-900">${r.branch}</td>
                         <td class="p-3 border border-slate-200 text-left">${r.equip}</td>
-                        <td class="p-3 border border-slate-200 text-blue-600 font-mono">${r.vMom}кВ / ${r.a}А</td>
+                        <td class="p-3 border border-slate-200 text-blue-600">${r.vMom}кВ / ${r.a}А</td>
                         <td class="p-3 border border-slate-200 text-red-500 font-mono text-[9px]">${r.start.replace('T', ' ')}</td>
                         <td class="p-3 border border-slate-200 text-green-600 font-mono text-[9px]">${r.end.replace('T', ' ')}</td>
-                        <td class="p-3 border border-slate-200 font-black text-orange-700">${r.hrs}</td>
-                        <td class="p-3 border border-slate-200 font-black text-red-700 bg-red-50/50 italic">${r.dteh}</td>
-                        <td class="p-3 border border-slate-200 text-slate-500">${r.weather}</td>
-                        <td class="p-3 border border-slate-200 text-left">${r.fault}</td>
+                        <td class="p-3 border border-slate-200 text-orange-700 font-black">${r.hrs}</td>
+                        <td class="p-3 border border-slate-200 text-red-700 bg-red-50/50 italic font-black">${r.dteh}</td>
+                        <td class="p-3 border border-slate-200">${r.fault}</td>
                         <td class="p-3 border border-slate-200 uppercase text-[9px]">${r.disp}</td>
                         <td class="p-3 border border-slate-200 space-x-2">
-                            <button onclick="editRow(${r.id})" class="text-blue-500 hover:underline">Засах</button>
-                            <button onclick="deleteRow(${r.id})" class="text-red-400 hover:underline">Устгах</button>
+                            <button onclick="editRow(${r.id})" class="text-blue-500">Засах</button>
+                            <button onclick="deleteRow(${r.id})" class="text-red-400">Устгах</button>
                         </td>
                     </tr>`;
             });
             document.getElementById('totalDTEH').textContent = totalD.toFixed(1);
-            document.getElementById('countBadge').textContent = db.length;
         }
 
-        function deleteRow(id) { if(confirm("Устгах уу?")) { db = db.filter(r => r.id !== id); render(); } }
-        function filterTable() {
-            const q = document.getElementById('search').value.toLowerCase();
-            const rows = document.querySelectorAll("#tableBody tr");
-            rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none");
+        function editRow(id) {
+            editId = id; const d = db.find(r => r.id === id);
+            document.getElementById('category').value = d.category; updateBranches();
+            document.getElementById('branch').value = d.branch;
+            document.getElementById('equipName').value = d.equip;
+            document.getElementById('momentVolt').value = d.vMom;
+            document.getElementById('momentCurrent').value = d.a;
+            document.getElementById('startTime').value = d.start;
+            document.getElementById('endTime').value = d.end;
+            document.getElementById('dispName').value = d.disp;
+            document.getElementById('saveBtn').innerText = "Шинэчлэх";
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            render();
         }
-        function exportToExcel() {
-            if(db.length === 0) return alert("Хоосон байна!");
-            const ws = XLSX.utils.json_to_sheet(db);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Тасралтын Тайлан");
-            XLSX.writeFile(wb, "DSEDN_Report_Final.xlsx");
+
+        function resetForm() {
+            editId = null; document.querySelectorAll('input, textarea').forEach(i => { if(i.id !== 'search' && i.id !== 'cosphi' && i.id !== 'pointCount') i.value = ""; });
+            document.getElementById('saveBtn').innerText = "Хадгалах"; document.getElementById('cancelBtn').classList.add('hidden');
+            render();
         }
+
+        function deleteRow(id) { if(confirm("Устгах уу?")) { db = db.filter(r => r.id !== id); localStorage.setItem('DSEDN_DATA', JSON.stringify(db)); render(); } }
+        function clearAllData() { if(confirm("БҮХ ӨГӨГДЛИЙГ УСТГАХ УУ?")) { db = []; localStorage.removeItem('DSEDN_DATA'); render(); } }
+        function filterTable() { const q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll("#tableBody tr").forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none"); }
+        function exportToExcel() { if(db.length === 0) return alert("Хоосон байна!"); const ws = XLSX.utils.json_to_sheet(db); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, "DSEDN_Export.xlsx"); }
 
         window.onload = () => {
             const cat = document.getElementById('category');
-            Object.keys(branches).forEach(k => {
-                const o = document.createElement('option');
-                o.value = k; o.textContent = k; cat.appendChild(o);
-            });
+            Object.keys(branches).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; cat.appendChild(o); });
             updateBranches();
-            const n = new Date();
-            n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
+            const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
             const f = n.toISOString().slice(0, 16);
-            document.getElementById('startTime').value = f;
-            document.getElementById('endTime').value = f;
+            document.getElementById('startTime').value = f; document.getElementById('endTime').value = f;
+            render();
         }
     </script>
 </body>
