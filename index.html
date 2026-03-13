@@ -3,122 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V6</title>
+    <title>Диспетчерийн бүртгэл V7 - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 p-4 font-sans text-[13px]">
+<body class="bg-gray-50 p-2 md:p-6 text-slate-800">
     <div class="max-w-full mx-auto">
         
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-center font-bold">
-            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-blue-600">
-                <p class="text-gray-500 text-[10px] uppercase">Нийт тасралт</p>
-                <h3 id="totalCount" class="text-2xl font-black">0</h3>
-            </div>
-            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-orange-500">
-                <p class="text-gray-500 text-[10px] uppercase">Цаг /ц/</p>
-                <h3 id="totalHours" class="text-2xl font-black">0.00</h3>
-            </div>
-            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-red-600">
-                <p class="text-gray-500 text-[10px] uppercase">ДТЭХ /кВт*ц/</p>
-                <h3 id="totalDTEH" class="text-2xl font-black">0.0</h3>
-            </div>
-            <div class="bg-green-600 p-4 rounded shadow flex items-center justify-center cursor-pointer hover:bg-green-700 transition" onclick="exportToExcel()">
-                <button class="text-white text-xs uppercase italic font-black">Excel Татах</button>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-xl font-black text-slate-900 border-l-4 border-blue-600 pl-3 uppercase tracking-tighter italic">
+                Аваарийн тасралтын бүртгэл <span class="text-blue-600 text-sm">V7.0</span>
+            </h1>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+                <div class="bg-white px-4 py-2 rounded shadow-sm border border-slate-200 min-w-[120px]">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Нийт тасралт</p>
+                    <h3 id="totalCount" class="text-lg font-black">0</h3>
+                </div>
+                <div class="bg-white px-4 py-2 rounded shadow-sm border border-slate-200 min-w-[120px]">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Нийт цаг /ц/</p>
+                    <h3 id="totalHours" class="text-lg font-black text-orange-600">0.00</h3>
+                </div>
+                <div class="bg-white px-4 py-2 rounded shadow-sm border border-slate-200 min-w-[150px]">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Нийт ДТЦЭХ</p>
+                    <h3 id="totalDTEH" class="text-lg font-black text-red-600">0.0</h3>
+                </div>
+                <button onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded font-bold text-xs hover:bg-green-700 transition shadow-md">EXCEL ТАЙЛАН</button>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-6">
-            <h2 class="text-base font-black mb-6 text-blue-900 border-b pb-2 uppercase italic">Аваарийн тасралтын дэлгэрэнгүй бүртгэл</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
                 
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                    <label class="font-bold text-[10px] uppercase text-blue-800 tracking-wider">1. Ангилал & Нэгж</label>
-                    <div>
-                        <span class="text-[10px] text-gray-400">Үндсэн ангилал:</span>
-                        <select id="category" onchange="updateBranches()" class="w-full border p-2 rounded bg-yellow-50 font-bold border-yellow-200 focus:ring-2 focus:ring-yellow-400">
-                            <option value="Компани">Компани</option>
-                            <option value="Бусад ТЗЭ">Бусад ТЗЭ</option>
-                            <option value="Хэрэглэгч">Хэрэглэгч</option>
-                        </select>
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black text-blue-700 uppercase bg-blue-50 p-1 px-2 rounded">1. Салбар нэгж</h4>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Үндсэн ангилал:</label>
+                        <select id="category" onchange="updateBranches()" class="w-full border p-2 rounded bg-white font-bold border-slate-300"></select>
                     </div>
-                    <div>
-                        <span class="text-[10px] text-gray-400">Дэд салбар:</span>
-                        <select id="branch" class="w-full border p-2 rounded border-gray-300 bg-white font-bold text-blue-900"></select>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Салбар нэгж:</label>
+                        <select id="branch" class="w-full border p-2 rounded bg-white font-bold text-blue-900 border-slate-300"></select>
                     </div>
-                    <input type="text" id="equipName" placeholder="Тоноглолын нэр" class="w-full border p-2 rounded shadow-sm">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Тоноглолын нэр:</label>
+                        <input type="text" id="equipName" placeholder="Жишээ: Ш-452" class="w-full border p-2 rounded border-slate-300">
+                    </div>
                 </div>
 
-                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-3">
-                    <label class="font-bold text-[10px] uppercase text-blue-800 tracking-wider">2. Техник үзүүлэлт</label>
-                    <div class="flex gap-2">
-                        <select id="voltageBase" class="w-1/2 border p-2 rounded font-bold"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select>
-                        <input type="number" id="pointCount" value="1" title="Цэгийн тоо" class="w-1/2 border p-2 rounded text-center font-bold">
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black text-purple-700 uppercase bg-purple-50 p-1 px-2 rounded">2. Техник үзүүлэлт</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500">Хүчдэл /кВ/:</label>
+                            <select id="voltageBase" class="w-full border p-2 rounded border-slate-300 font-bold"><option value="35">35кВ</option><option value="110">110кВ</option><option value="10">10кВ</option><option value="6">6кВ</option><option value="0.4">0.4кВ</option></select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500">Цэгийн тоо:</label>
+                            <input type="number" id="pointCount" value="1" class="w-full border p-2 rounded border-slate-300 text-center font-bold">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="number" id="momentVolt" value="35" step="0.1" class="border p-2 rounded font-bold text-blue-700 bg-white" placeholder="Эгшний кВ">
-                        <input type="number" id="momentCurrent" value="0" class="border p-2 rounded font-bold text-blue-700 bg-white" placeholder="Эгшний А">
+                        <div class="space-y-1 text-blue-700">
+                            <label class="text-[10px] font-black italic underline">Эгшний кВ:</label>
+                            <input type="number" id="momentVolt" value="35" step="0.1" class="w-full border p-2 rounded font-bold border-blue-200">
+                        </div>
+                        <div class="space-y-1 text-blue-700">
+                            <label class="text-[10px] font-black italic underline">Эгшний А:</label>
+                            <input type="number" id="momentCurrent" value="0" class="w-full border p-2 rounded font-bold border-blue-200">
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-bold">cosφ:</span>
-                        <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full border p-2 rounded font-black text-center text-slate-700">
-                    </div>
-                </div>
-
-                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100 space-y-3">
-                    <label class="font-bold text-[10px] uppercase text-orange-800 tracking-wider">3. Хугацаа (Синхрон)</label>
-                    <div>
-                        <span class="text-[10px] font-bold text-red-600 italic">Тасарсан:</span>
-                        <input type="datetime-local" id="startTime" class="w-full border p-2 rounded border-red-200 shadow-sm font-mono text-[11px]">
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-bold text-green-700 italic">Залгасан:</span>
-                        <input type="datetime-local" id="endTime" class="w-full border p-2 rounded border-green-200 shadow-sm font-mono text-[11px]">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Ачааллын коэффициент (cosφ):</label>
+                        <input type="number" id="cosphi" value="0.9" step="0.01" class="w-full border p-2 rounded font-black text-center border-slate-300">
                     </div>
                 </div>
 
-                <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 space-y-3">
-                    <label class="font-bold text-[10px] uppercase text-purple-800 tracking-wider">4. Гэмтэл & Диспетчер</label>
-                    <select id="protection" class="w-full border p-2 rounded"><option>МТО</option><option>МТЗ</option><option>Газардлага</option><option>Дифференциал</option></select>
-                    <select id="fault" class="w-full border p-2 rounded text-red-700 font-bold"><option>АШ</option><option>КШ</option><option>Дэд станц</option><option>Тоноглол</option></select>
-                    <input type="text" id="dispName" placeholder="Диспетчерийн нэр" class="w-full border p-2 rounded font-black uppercase bg-white">
-                </div>
-
-                <div class="bg-green-50 p-4 rounded-lg border border-green-100 flex flex-col justify-between">
-                    <label class="font-bold text-[10px] uppercase text-green-800 tracking-wider">5. Хадгалах</label>
-                    <textarea id="reason" rows="1" class="w-full border p-2 rounded text-[11px] mb-2" placeholder="Тасралтын шалтгаан"></textarea>
-                    <textarea id="action" rows="1" class="w-full border p-2 rounded text-[11px] mb-2" placeholder="Авсан арга хэмжээ"></textarea>
-                    <button onclick="saveData()" class="w-full bg-slate-900 text-white font-black py-4 rounded-lg hover:bg-black transition-all shadow-lg uppercase text-[12px] tracking-widest">БҮРТГЭХ</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-300">
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-[11px] border-collapse" id="mainTable">
-                    <thead class="bg-slate-800 text-white font-bold uppercase text-center">
-                        <tr>
-                            <th class="p-3 border border-slate-700">д/д</th>
-                            <th class="p-3 border border-slate-700 text-left">Салбар нэгж</th>
-                            <th class="p-3 border border-slate-700">Тоноглол</th>
-                            <th class="p-3 border border-slate-700">кВ</th>
-                            <th class="p-3 border border-slate-700 text-yellow-400">Эгшний кВ</th>
-                            <th class="p-3 border border-slate-700 text-yellow-400">Эгшний А</th>
-                            <th class="p-3 border border-slate-700 text-red-400">Тасарсан</th>
-                            <th class="p-3 border border-slate-700 text-green-400">Залгасан</th>
-                            <th class="p-3 border border-slate-700 bg-orange-900">Хугацаа</th>
-                            <th class="p-3 border border-slate-700 bg-red-900 italic underline">ДТЭХ</th>
-                            <th class="p-3 border border-slate-700">Диспетчер</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="text-center divide-y font-medium text-gray-700"></tbody>
-                    <tfoot class="bg-slate-50 font-black italic uppercase">
-                        <tr>
-                            <td colspan="8" class="p-3 text-right">НИЙТ ДҮН:</td>
-                            <td id="footerHours" class="p-3 border text-orange-700 text-[14px]">0.00</td>
-                            <td id="footerDTEH" class="p-3 border text-red-700 text-[14px]">0.0</td>
-                            <td class="border"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black text-orange-700 uppercase bg-orange-50 p
