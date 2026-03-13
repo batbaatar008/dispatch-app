@@ -3,45 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V8</title>
+    <title>Диспетчерийн бүртгэл V9.Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
-        .font-mono { font-family: 'Roboto+Mono', monospace; }
-        input, select, textarea { border: 1px solid #cbd5e1 !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; }
+        .form-card { height: 100%; display: flex; flex-direction: column; }
     </style>
 </head>
-<body class="bg-slate-50 p-4 text-slate-900">
-    <div class="max-w-full mx-auto">
+<body class="bg-slate-100 p-3 md:p-6 text-slate-800">
+    <div class="max-w-[1500px] mx-auto">
         
-        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4 border-b-2 border-slate-200 pb-4">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
-                <h1 class="text-2xl font-black italic uppercase tracking-tighter text-blue-900">Аваарийн тасралтын бүртгэл</h1>
-                <p class="text-[10px] font-bold text-slate-500 uppercase">Darkhan Selenge Electricity Distribution Network JSC</p>
+                <h1 class="text-2xl font-black text-blue-900 italic tracking-tighter uppercase">Аваарийн тасралтын бүртгэл</h1>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">Darkhan Selenge Distribution Network</p>
             </div>
-            <div class="flex gap-4">
-                <div class="text-right">
-                    <p class="text-[9px] font-bold text-slate-400">НИЙТ ДТЦЭХ</p>
-                    <h2 id="totalDTEH" class="text-2xl font-black text-red-600">0.0</h2>
+            <div class="flex gap-4 items-center">
+                <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-slate-200 text-center min-w-[150px]">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase leading-none">Нийт ДТЦЭХ /кВт.ц/</p>
+                    <h2 id="totalDTEH" class="text-2xl font-black text-red-600 mt-1">0.0</h2>
                 </div>
-                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow-lg font-bold text-xs self-end transition-all">EXCEL ТАТАХ</button>
+                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl shadow-lg font-bold text-xs uppercase transition-all">Excel Тайлан Татах</button>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-start">
-                
-                <div class="space-y-4">
-                    <h3 class="text-xs font-black text-blue-600 uppercase border-b pb-1">1. Салбар нэгж</h3>
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-bold">Үндсэн ангилал:</label>
-                        <select id="category" onchange="updateBranches()" class="w-full p-2 rounded font-bold bg-slate-50"></select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-bold">Салбар нэгж:</label>
-                        <select id="branch" class="w-full p-2 rounded font-bold text-blue-800"></select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-bold">Тоноглолын нэр:</label>
-                        <input type="text" id="equipName" placeholder="Ш-452" class="w-full p
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 form-card">
+                <h3 class="text-[11px] font-black text-blue-600 uppercase border-b-
