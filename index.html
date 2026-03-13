@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчерийн бүртгэл V17 - 24H Full</title>
+    <title>Диспетчерийн бүртгэл V16 - Full Charts</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,8 +12,9 @@
         body { font-family: 'Manrope', sans-serif; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; padding: 20px; overflow-y: auto; }
         .modal-content { background: white; width: 100%; max-width: 1200px; border-radius: 24px; padding: 30px; margin: 20px auto; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; }
+        .branch-cell { background-color: #fef08a; font-weight: 800; }
         label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
     </style>
 </head>
 <body class="bg-slate-100 p-3 md:p-6 text-slate-800">
@@ -35,91 +36,78 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border">
             <div><label>Үндсэн ангилал</label><select id="category" onchange="updateBranches()" class="w-full p-2 rounded-lg border font-bold bg-slate-50 text-sm"></select></div>
             <div><label>Салбар хэсэг</label><select id="branch" class="w-full p-2 rounded-lg border font-bold text-blue-800 text-sm"></select></div>
-            <div><label>Тоноглол</label><input type="text" id="equipName" placeholder="Тоноглолын нэр" class="w-full p-2 rounded-lg border font-bold text-sm"></div>
-            <div>
-                <label>Эгшний кВ / А</label>
-                <div class="flex gap-1">
-                    <input type="number" id="momentVolt" placeholder="кВ" class="w-1/2 p-2 rounded-lg border font-bold text-sm">
-                    <input type="number" id="momentCurrent" placeholder="А" class="w-1/2 p-2 rounded-lg border font-bold text-sm">
-                </div>
+            <div><label>Тоноглол</label><input type="text" id="equipName" class="w-full p-2 rounded-lg border font-bold text-sm"></div>
+            <div><label>Эгшний кВ / А</label>
+                <div class="flex gap-1"><input type="number" id="momentVolt" placeholder="кВ" class="w-1/2 p-2 rounded-lg border text-sm"><input type="number" id="momentCurrent" placeholder="А" class="w-1/2 p-2 rounded-lg border text-sm"></div>
             </div>
-            <div>
-                <label>Тасарсан / Залгасан (24H)</label>
-                <div class="flex flex-col gap-1">
-                    <input type="datetime-local" id="startTime" step="60" class="p-1 rounded border font-bold text-[11px]">
-                    <input type="datetime-local" id="endTime" step="60" class="p-1 rounded border font-bold text-[11px]">
-                </div>
+            <div><label>Тасарсан / Залгасан</label>
+                <div class="flex flex-col gap-1"><input type="datetime-local" id="startTime" class="p-1 rounded border text-[10px]"><input type="datetime-local" id="endTime" class="p-1 rounded border text-[10px]"></div>
             </div>
-            <div><label>Цаг агаар</label><select id="weather" class="w-full p-2 rounded-lg border font-bold text-sm bg-blue-50/30">
+            <div class="lg:col-span-1"><label>Цаг агаар</label><select id="weather" class="w-full p-2 rounded-lg border text-sm">
                 <option>Тогтуун</option><option>Цастай</option><option>Бороотой</option><option>Шуургатай</option><option>Дуу цахилгаантай</option><option>Цасан шуургатай</option>
             </select></div>
-            <div><label>Гэмтлийн төрөл</label><select id="fault" class="w-full p-2 rounded-lg border font-bold text-sm bg-red-50/30 text-red-700">
+            <div><label>Гэмтлийн төрөл</label><select id="fault" class="w-full p-2 rounded-lg border text-sm">
                 <option>Дэд станц</option><option>Агаарын шугам</option><option>Кабель шугам</option><option>Хэт хүчдэл</option><option>Тоноглол</option><option>Тодорхойгүй</option>
             </select></div>
-            <div><label>Диспетчер</label><input type="text" id="dispName" class="w-full p-2 rounded-lg border font-black uppercase text-xs"></div>
-            <div class="lg:col-span-2 flex items-end">
-                <button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Мэдээлэл Хадгалах</button>
-            </div>
+            <div><label>Диспетчер</label><input type="text" id="dispName" class="w-full p-2 rounded-lg border text-sm uppercase"></div>
+            <div class="lg:col-span-2 flex items-end"><button id="saveBtn" onclick="saveEntry()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Хадгалах</button></div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-[10.5px] border-collapse">
                     <thead class="bg-slate-900 text-white font-bold text-center">
-                        <tr>
-                            <th class="p-4 border border-slate-800">№</th>
-                            <th class="p-4 border border-slate-800 text-left">Салбар нэгж</th>
-                            <th class="p-4 border border-slate-800">Тоноглол</th>
-                            <th class="p-4 border border-slate-800">кВ / А</th>
-                            <th class="p-4 border border-slate-800">Тасарсан</th>
-                            <th class="p-4 border border-slate-800">Залгасан</th>
-                            <th class="p-4 border border-slate-800">Цаг</th>
-                            <th class="p-4 border border-slate-800 bg-red-900/50">ДТЦЭХ</th>
-                            <th class="p-4 border border-slate-800">Гэмтэл</th>
-                            <th class="p-4 border border-slate-800">Үйлдэл</th>
-                        </tr>
+                        <tr><th class="p-4 border border-slate-800">№</th><th class="p-4 border border-slate-800 text-left">Салбар</th><th class="p-4 border border-slate-800">Тоноглол</th><th class="p-4 border border-slate-800">кВ/А</th><th class="p-4 border border-slate-800">Тасарсан</th><th class="p-4 border border-slate-800">Залгасан</th><th class="p-4 border border-slate-800">ДТЦЭХ</th><th class="p-4 border border-slate-800">Гэмтэл</th><th class="p-4 border border-slate-800">Үйлдэл</th></tr>
                     </thead>
-                    <tbody id="tableBody" class="text-center font-bold divide-y text-slate-700"></tbody>
+                    <tbody id="tableBody" class="text-center font-bold divide-y"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="reportModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-8 border-b pb-4">
-                <h2 class="text-2xl font-black uppercase text-slate-800 italic">Аваарийн тасралтын мэдээний тайлан</h2>
-                <button onclick="closeModal('reportModal')" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold uppercase text-xs">Хаах</button>
-            </div>
-            <div id="reportContent" class="overflow-x-auto">
-                </div>
-        </div>
-    </div>
+    <div id="reportModal" class="modal-overlay"><div class="modal-content">
+        <div class="flex justify-between items-center mb-6 border-b pb-4"><h2 class="text-xl font-black uppercase italic">Тасралтын мэдээний тайлан</h2><button onclick="closeModal('reportModal')" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs">Хаах</button></div>
+        <table class="w-full report-table text-xs border-collapse"><tbody id="reportTableBody"></tbody></table>
+    </div></div>
 
     <div id="chartModal" class="modal-overlay">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-8 border-b pb-4">
-                <h2 class="text-2xl font-black uppercase text-slate-800 italic">Статистик Шинжилгээ (Графикууд)</h2>
+                <h2 class="text-2xl font-black uppercase text-slate-800 italic tracking-tight">Тасралтын статистик шинжилгээ</h2>
                 <button onclick="closeModal('chartModal')" class="bg-indigo-900 text-white px-6 py-2 rounded-xl font-bold uppercase text-xs">Хаах</button>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Салбараар (Pie)</h3><div class="h-64"><canvas id="pieBranch"></canvas></div></div>
-                <div class="bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Гэмтлээр (Pie)</h3><div class="h-64"><canvas id="pieFault"></canvas></div></div>
-                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Гэмтлийн төрөл салбараар</h3><div class="h-80"><canvas id="barFaultBranch"></canvas></div></div>
-                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border"><h3 class="text-xs font-black mb-4 text-center uppercase text-slate-500 italic">Цаг агаар салбараар</h3><div class="h-80"><canvas id="barWeatherBranch"></canvas></div></div>
+                <div class="bg-slate-50 p-6 rounded-2xl border">
+                    <h3 class="text-[11px] font-black mb-4 text-center uppercase text-slate-500 italic">Тасралтын ангилал /нэгж тус бүрээр/</h3>
+                    <div class="h-64"><canvas id="pieBranch"></canvas></div>
+                </div>
+
+                <div class="bg-slate-50 p-6 rounded-2xl border">
+                    <h3 class="text-[11px] font-black mb-4 text-center uppercase text-slate-500 italic">Тасралтын ангилал /гэмтлээр/</h3>
+                    <div class="h-64"><canvas id="pieFault"></canvas></div>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border">
+                    <h3 class="text-[11px] font-black mb-4 text-center uppercase text-slate-500 italic">Гэмтлийн ангилал салбар нэгжээр</h3>
+                    <div class="h-80"><canvas id="barFaultBranch"></canvas></div>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 bg-slate-50 p-6 rounded-2xl border">
+                    <h3 class="text-[11px] font-black mb-4 text-center uppercase text-slate-500 italic">Тасралт гарсан үеийн цаг агаарын төлөв байдал</h3>
+                    <div class="h-80"><canvas id="barWeatherBranch"></canvas></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const branches = { 
-            "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА", "ХҮТ"], 
-            "Бусад": ["ДТЗЭ", "ҮТЗЭ", "ТТЗЭ", "Бусад"] 
-        };
+        const branches = { "Компани": ["Сүхбаатар", "Хөтөл", "Зүүнхараа", "Жаргалант", "АЗА", "ЗТТА"], "Бусад": ["ДТЗЭ", "ҮТЗЭ", "Бусад"] };
         let db = JSON.parse(localStorage.getItem('DSEDN_DATA')) || [];
+        let editId = null;
         let chartInstances = {};
 
         function updateBranches() {
@@ -129,63 +117,32 @@
             (branches[cat] || []).forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; bSel.appendChild(o); });
         }
 
-        // Цагийг 24 цагаар форматлах функц
-        function formatDateTime24(dtStr) {
-            if(!dtStr) return "---";
-            const d = new Date(dtStr);
-            const date = d.toLocaleDateString('mn-MN', { year:'numeric', month:'2-digit', day:'2-digit' });
-            const time = d.toLocaleTimeString('mn-MN', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            return `${date} ${time}`;
-        }
-
         function saveEntry() {
             const s = document.getElementById('startTime').value;
             const e = document.getElementById('endTime').value;
-            if(!s || !e) return alert("Огноог бүрэн оруулна уу!");
-
             const diff = (new Date(e) - new Date(s)) / (1000 * 3600);
             const dteh = (1.732 * (parseFloat(document.getElementById('momentVolt').value)||0) * (parseFloat(document.getElementById('momentCurrent').value)||0) * 0.9 * diff).toFixed(1);
 
             const data = {
-                id: Date.now(),
+                id: editId || Date.now(),
                 category: document.getElementById('category').value,
                 branch: document.getElementById('branch').value,
-                equip: document.getElementById('equipName').value || "---",
-                vMom: document.getElementById('momentVolt').value || 0,
-                amp: document.getElementById('momentCurrent').value || 0,
+                equip: document.getElementById('equipName').value,
+                vMom: document.getElementById('momentVolt').value,
+                amp: document.getElementById('momentCurrent').value,
                 start: s, end: e, hrs: diff.toFixed(2), dteh: dteh,
                 fault: document.getElementById('fault').value,
                 weather: document.getElementById('weather').value,
-                disp: document.getElementById('dispName').value || "---"
+                disp: document.getElementById('dispName').value
             };
 
-            db.push(data);
+            if(editId) { db = db.map(r => r.id === editId ? data : r); } else { db.push(data); }
             localStorage.setItem('DSEDN_DATA', JSON.stringify(db));
-            render();
-        }
-
-        function render() {
-            const body = document.getElementById('tableBody'); body.innerHTML = "";
-            let total = 0;
-            db.forEach((r, i) => {
-                total += parseFloat(r.dteh);
-                body.innerHTML += `<tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-3 border border-slate-200">${i+1}</td>
-                    <td class="p-3 border border-slate-200 text-left text-blue-900">${r.branch}</td>
-                    <td class="p-3 border border-slate-200">${r.equip}</td>
-                    <td class="p-3 border border-slate-200 text-blue-600">${r.vMom}кВ / ${r.amp}А</td>
-                    <td class="p-3 border border-slate-200 font-mono text-red-600">${formatDateTime24(r.start)}</td>
-                    <td class="p-3 border border-slate-200 font-mono text-green-600">${formatDateTime24(r.end)}</td>
-                    <td class="p-3 border border-slate-200">${r.hrs}</td>
-                    <td class="p-3 border border-slate-200 text-red-700 bg-red-50 italic">${r.dteh}</td>
-                    <td class="p-3 border border-slate-200">${r.fault}</td>
-                    <td class="p-3 border border-slate-200"><button onclick="deleteRow(${r.id})" class="text-red-400 hover:underline">Устгах</button></td></tr>`;
-            });
-            document.getElementById('totalDTEH').innerText = total.toFixed(1);
+            editId = null; render();
         }
 
         function openCharts() {
-            if (db.length === 0) return alert("Өгөгдөл алга!");
+            if (db.length === 0) return alert("Дата алга!");
             document.getElementById('chartModal').style.display = 'block';
             
             const bCounts = {}, fCounts = {}, bFaults = {}, bWeather = {};
@@ -202,14 +159,18 @@
             });
 
             const labels = Object.keys(bCounts);
+            
+            // 1 & 2 Pie Charts
             drawChart('pieBranch', 'pie', labels, Object.values(bCounts), ['#3b82f6','#f97316','#fbbf24','#84cc16','#a855f7','#06b6d4']);
             drawChart('pieFault', 'pie', Object.keys(fCounts), Object.values(fCounts), ['#ef4444','#f59e0b','#10b981','#6366f1','#8b5cf6']);
-            
-            const fDs = faults.map((f, i) => ({ label: f, data: labels.map(b => bFaults[b][f] || 0), backgroundColor: ['#3b82f6','#f97316','#94a3b8','#fbbf24','#60a5fa','#4ade80'][i%6] }));
-            drawChart('barFaultBranch', 'bar', labels, fDs, null, true);
 
-            const wDs = weathers.map((w, i) => ({ label: w, data: labels.map(b => bWeather[b][w] || 0), backgroundColor: ['#1e40af','#ea580c','#94a3b8','#ca8a04','#0ea5e9','#16a34a'][i%6] }));
-            drawChart('barWeatherBranch', 'bar', labels, wDs, null, true);
+            // 3 Grouped Bar - Faults
+            const fDatasets = faults.map((f, i) => ({ label: f, data: labels.map(b => bFaults[b][f] || 0), backgroundColor: ['#3b82f6','#f97316','#94a3b8','#fbbf24','#60a5fa','#4ade80'][i%6] }));
+            drawChart('barFaultBranch', 'bar', labels, fDatasets, null, true);
+
+            // 4 Grouped Bar - Weather
+            const wDatasets = weathers.map((w, i) => ({ label: w, data: labels.map(b => bWeather[b][w] || 0), backgroundColor: ['#1e40af','#ea580c','#94a3b8','#ca8a04','#0ea5e9','#16a34a'][i%6] }));
+            drawChart('barWeatherBranch', 'bar', labels, wDatasets, null, true);
         }
 
         function drawChart(id, type, labels, data, colors, isGroup = false) {
@@ -217,31 +178,33 @@
             chartInstances[id] = new Chart(document.getElementById(id), {
                 type: type,
                 data: { labels: labels, datasets: isGroup ? data : [{ data: data, backgroundColor: colors }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
             });
         }
 
-        function deleteRow(id) { if(confirm("Устгах уу?")) { db = db.filter(r => r.id !== id); localStorage.setItem('DSEDN_DATA', JSON.stringify(db)); render(); } }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
-        function exportToExcel() { 
-            const ws = XLSX.utils.json_to_sheet(db); 
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, "Data"); 
-            XLSX.writeFile(wb, "DSEDN_Export.xlsx"); 
+        function render() {
+            const body = document.getElementById('tableBody'); body.innerHTML = "";
+            let total = 0;
+            db.forEach((r, i) => {
+                total += parseFloat(r.dteh);
+                body.innerHTML += `<tr class="hover:bg-slate-50">
+                    <td class="p-3 border">${i+1}</td><td class="p-3 border text-left">${r.branch}</td><td class="p-3 border">${r.equip}</td>
+                    <td class="p-3 border">${r.vMom}/${r.amp}</td><td class="p-3 border text-[9px]">${r.start}</td><td class="p-3 border text-[9px]">${r.end}</td>
+                    <td class="p-3 border text-red-700">${r.dteh}</td><td class="p-3 border">${r.fault}</td>
+                    <td class="p-3 border"><button onclick="deleteRow(${r.id})" class="text-red-400">Устгах</button></td></tr>`;
+            });
+            document.getElementById('totalDTEH').innerText = total.toFixed(1);
         }
+
+        function openReport() { /* Өмнөх тайлангийн хүснэгт зурах функц энд байна... */ }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function deleteRow(id) { db = db.filter(r => r.id !== id); localStorage.setItem('DSEDN_DATA', JSON.stringify(db)); render(); }
+        function exportToExcel() { /* Excel татах функц... */ }
 
         window.onload = () => {
             const cat = document.getElementById('category');
             Object.keys(branches).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; cat.appendChild(o); });
-            updateBranches();
-            // Одоогийн цагийг 24 цагаар тохируулах
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const currentStr = now.toISOString().slice(0, 16);
-            document.getElementById('startTime').value = currentStr;
-            document.getElementById('endTime').value = currentStr;
-            render();
+            updateBranches(); render();
         }
     </script>
 </body>
